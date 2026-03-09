@@ -9,17 +9,17 @@ set -e
 echo "[+] Starting RDNA3 Lab Environment Setup..."
 
 # 1. System Dependencies
-echo "[+] Installing system dependencies..."
-sudo apt-get update
-sudo apt-get install -y \
-    build-essential meson ninja-build cmake python3-mako \
-    bison flex gettext pkg-config libdrm-dev libvulkan-dev llvm-dev \
-    llvm-spirv-18 clang libx11-dev libxext-dev libxfixes-dev libxcb-glx0-dev \
-    libxcb-shm0-dev libx11-xcb-dev libxcb-dri2-0-dev libxcb-dri3-dev \
-    libxcb-present-dev libxshmfence-dev libxrandr-dev libwayland-dev \
-    wayland-protocols libelf-dev zlib1g-dev python3-pip python3-setuptools \
-    git pciutils wget jq cmake clang-tools linux-headers-generic \
-    glslang-tools spirv-tools python3-venv
+echo "[+] Skipping system dependencies installation (already installed)..."
+# sudo apt-get update
+# sudo apt-get install -y \
+#     build-essential meson ninja-build cmake python3-mako \
+#     bison flex gettext pkg-config libdrm-dev libvulkan-dev llvm-dev \
+#     llvm-spirv-18 clang libx11-dev libxext-dev libxfixes-dev libxcb-glx0-dev \
+#     libxcb-shm0-dev libx11-xcb-dev libxcb-dri2-0-dev libxcb-dri3-dev \
+#     libxcb-present-dev libxshmfence-dev libxrandr-dev libwayland-dev \
+#     wayland-protocols libelf-dev zlib1g-dev python3-pip python3-setuptools \
+#     git pciutils wget jq cmake clang-tools linux-headers-generic \
+#     glslang-tools spirv-tools python3-venv
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_ROOT"
@@ -33,7 +33,7 @@ echo "[+] Setting up Python virtual environment for latest Meson..."
 python3 -m venv build/venv
 source build/venv/bin/activate
 pip install --upgrade pip
-pip install meson mako packaging
+pip install meson mako packaging pyyaml
 
 # 2. Build isolated RADV (Mesa 3D)
 echo "[+] Setting up isolated RADV (Mesa 3D)..."
