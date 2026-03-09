@@ -19,7 +19,7 @@ sudo apt-get install -y \
     libxcb-present-dev libxshmfence-dev libxrandr-dev libwayland-dev \
     wayland-protocols libelf-dev zlib1g-dev python3-pip python3-setuptools \
     git pciutils wget jq cmake clang-tools linux-headers-generic \
-    glslang-tools spirv-tools
+    glslang-tools spirv-tools python3-venv
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_ROOT"
@@ -33,7 +33,11 @@ echo "[+] Setting up Python virtual environment for latest Meson..."
 python3 -m venv build/venv
 source build/venv/bin/activate
 pip install --upgrade pip
+<<<<<<< HEAD
 pip install meson mako packaging pyyaml
+=======
+pip install meson mako
+>>>>>>> 925d7ca (fix: use python venv to install newer meson version for mesa build)
 
 # 2. Build isolated RADV (Mesa 3D)
 echo "[+] Setting up isolated RADV (Mesa 3D)..."
