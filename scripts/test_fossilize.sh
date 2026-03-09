@@ -44,18 +44,27 @@ echo "[+] Creating Fossilize database..."
 "${INSTALL_PREFIX}/bin/fossilize-synth" --comp "${SPV_OUT}" --output "${FOZ_OUT}"
 
 echo "[+] Running gpu_test_runner to extract ACO_ORIGINAL ISA..."
-"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler ACO_ORIGINAL -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${FOZ_OUT}" > "${DIRNAME}/${BASENAME}_aco_original.asm" 2>&1
+LOG_DIR_ACO=$("${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler ACO_ORIGINAL -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${FOZ_OUT}" | grep 'Logs available in' | awk '{print $NF}')
+cat "${LOG_DIR_ACO}/stderr.log" > "${DIRNAME}/${BASENAME}_aco_original_raw.asm"
 
 echo "[+] Running gpu_test_runner to extract ACO_CUSTOM ISA..."
 if [ -d "${PROJECT_ROOT}/build/install_custom" ]; then
-    "${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler ACO_CUSTOM -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${FOZ_OUT}" > "${DIRNAME}/${BASENAME}_aco_custom.asm" 2>&1
+    LOG_DIR_CUSTOM=$("${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler ACO_CUSTOM -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${FOZ_OUT}" | grep 'Logs available in' | awk '{print $NF}')
+    cat "${LOG_DIR_CUSTOM}/stderr.log" > "${DIRNAME}/${BASENAME}_aco_custom_raw.asm"
 else
     echo "Warning: Custom ACO not found at ${PROJECT_ROOT}/build/install_custom. Skipping. Run build_custom_aco.sh."
-    touch "${DIRNAME}/${BASENAME}_aco_custom.asm"
+    touch "${DIRNAME}/${BASENAME}_aco_custom_raw.asm"
 fi
 
 echo "[+] Running gpu_test_runner to extract LLVM ISA..."
-"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler LLVM -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${FOZ_OUT}" > "${DIRNAME}/${BASENAME}_llvm.asm" 2>&1
+LOG_DIR_LLVM=$("${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler LLVM -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${FOZ_OUT}" | grep 'Logs available in' | awk '{print $NF}')
+cat "${LOG_DIR_LLVM}/stderr.log" > "${DIRNAME}/${BASENAME}_llvm_raw.asm"
+
+echo "[+] Parsing clean ASM..."
+# Extract the actual disasm lines to compare them clearly
+sed -n '/disasm:/,/Fossilize INFO/p' "${DIRNAME}/${BASENAME}_aco_original_raw.asm" | sed '/Fossilize INFO/d' > "${DIRNAME}/${BASENAME}_aco_original.asm"
+sed -n '/disasm:/,/Fossilize INFO/p' "${DIRNAME}/${BASENAME}_aco_custom_raw.asm" | sed '/Fossilize INFO/d' > "${DIRNAME}/${BASENAME}_aco_custom.asm"
+sed -n '/disasm:/,/Fossilize INFO/p' "${DIRNAME}/${BASENAME}_llvm_raw.asm" | sed '/Fossilize INFO/d' > "${DIRNAME}/${BASENAME}_llvm.asm"
 
 echo "[+] Generating Summary Diff..."
 SUMMARY_FILE="${DIRNAME}/${BASENAME}_summary.diff"
