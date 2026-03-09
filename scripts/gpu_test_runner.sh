@@ -6,7 +6,7 @@
 set -e
 
 # Default settings
-COMPILER="ACO"
+COMPILER="ACO_ORIGINAL"
 DEBUG_CRASH=false
 EXTRA_ENV=""
 COMMAND=""
@@ -14,7 +14,7 @@ COMMAND=""
 function show_help {
     echo "Usage: ./gpu_test_runner.sh [OPTIONS] -- <command_to_run>"
     echo "Options:"
-    echo "  --compiler [ACO|LLVM]      Select the compiler backend (Default: ACO)"
+    echo "  --compiler [ACO_ORIGINAL|ACO_CUSTOM|LLVM] Select compiler backend (Default: ACO_ORIGINAL)"
     echo "  --vopd                     Enable VOPD (Dual-Issue) via RADV_PERFTEST"
     echo "  --wave32                   Enable wave32 mode via RADV_PERFTEST"
     echo "  --debug-crash              Enable UMR memory dump on crash"
@@ -47,7 +47,12 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 # Locate the custom RADV ICD
-INSTALL_PREFIX="$PROJECT_ROOT/build/install"
+if [ "$COMPILER" == "ACO_CUSTOM" ]; then
+    INSTALL_PREFIX="$PROJECT_ROOT/build/install_custom"
+else
+    INSTALL_PREFIX="$PROJECT_ROOT/build/install"
+fi
+
 ICD_FILE=$(find "${INSTALL_PREFIX}/share/vulkan/icd.d" -name "*.json" 2>/dev/null | head -n 1)
 
 if [ -z "$ICD_FILE" ]; then
@@ -62,8 +67,10 @@ export RADV_DEBUG="shaders,hang,nocache"
 if [ "$COMPILER" == "LLVM" ]; then
     export RADV_DEBUG="${RADV_DEBUG},llvm"
     echo "[*] Backend: AMD LLVM"
+elif [ "$COMPILER" == "ACO_CUSTOM" ]; then
+    echo "[*] Backend: Custom Valve ACO"
 else
-    echo "[*] Backend: Valve ACO"
+    echo "[*] Backend: Original Valve ACO"
 fi
 
 # Inject extra env
