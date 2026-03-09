@@ -20,10 +20,13 @@ sudo apt-get install -y \
     wayland-protocols libelf-dev zlib1g-dev python3-pip python3-setuptools \
     git pciutils wget jq cmake clang-tools linux-headers-generic
 
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
 # Ensure local directories exist
 mkdir -p lib
 mkdir -p build/install
-INSTALL_PREFIX=$(realpath build/install)
+INSTALL_PREFIX="$PROJECT_ROOT/build/install"
 
 # 2. Build isolated RADV (Mesa 3D)
 echo "[+] Setting up isolated RADV (Mesa 3D)..."

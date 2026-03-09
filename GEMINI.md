@@ -22,3 +22,16 @@ Ferramental e Stack Tecnológico:
     Framework de Teste: Fossilize (Valve) para sintetizar ambientes Vulkan (PSOs) e dissecar SPIR-V para ISA nativa offline (fossilize-disasm).
 
     Observabilidade de Baixo Nível: Ferramenta AMD UMR (User Mode Register Debugger) para extrair o estado das Waves, conteúdo de registradores (SGPRs/VGPRs) e o PC (Program Counter) exato no momento de um travamento da GPU. Variáveis de ambiente como RADV_DEBUG=shaders,hang,nocache.
+
+## Estrutura do Projeto
+
+O projeto foi reestruturado para maior organização:
+
+*   **`scripts/`**: Contém todos os scripts utilitários.
+    *   `setup_env.sh`: Inicializa as dependências, baixa e compila isoladamente o Mesa RADV e o Fossilize.
+    *   `gpu_test_runner.sh`: Padronizador de testes com injeção de variáveis RADV e dumps UMR automáticos.
+    *   `test_fossilize.sh`: Disseca e compara a compilação do ISA via Fossilize para ACO e LLVM.
+*   **`src/`** (ou shaders): Código-fonte e compute shaders (ex: `test_vopd.comp`) para validação das hipóteses.
+*   **`lib/`**: Repositórios clonados (Mesa, Fossilize) isolados do host (ignorados no Git).
+*   **`build/`**: Artefatos de compilação e o prefixo de instalação (install) que detém a versão customizada do RADV (ignorados no Git).
+*   **`logs/`**: Métricas de execução, logs standard e dumps crús do UMR em caso de crash (ignorados no Git).
