@@ -1,0 +1,31 @@
+# Bibliotecas de Terceiros e Fontes Clonas
+lib/
+# Artefatos de Build e Instalações Isoladas (Mesa RADV, Fossilize, etc)
+build/
+
+# Logs e Dumps UMR
+logs/
+
+# Artefatos Intermediários e Arquivos de Máquina (ISA)
+*.spv
+*.asm
+
+# Arquivos Binários Baixados (ex: Vulkan SDK)
+*.tar.xz
+*.tar.gz
+*.zip
+
+# Diretórios de Sistema/OS e Arquivos Temporários
+.DS_Store
+*.swp
+*~
+
+# Outros Ambientes (ex: Python)
+__pycache__/
+*.pyc
+venv/
+.env/
+
+radeon_gpu_analyzer/
+vulkansdk-linux-x86_64-*.tar.xz
+
