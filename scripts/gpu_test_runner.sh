@@ -43,8 +43,11 @@ if [ -z "$COMMAND" ]; then
     exit 1
 fi
 
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
 # Locate the custom RADV ICD
-INSTALL_PREFIX=$(realpath build/install)
+INSTALL_PREFIX="$PROJECT_ROOT/build/install"
 ICD_FILE=$(find "${INSTALL_PREFIX}/share/vulkan/icd.d" -name "*.json" 2>/dev/null | head -n 1)
 
 if [ -z "$ICD_FILE" ]; then
