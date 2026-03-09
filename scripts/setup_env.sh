@@ -33,11 +33,7 @@ echo "[+] Setting up Python virtual environment for latest Meson..."
 python3 -m venv build/venv
 source build/venv/bin/activate
 pip install --upgrade pip
-<<<<<<< HEAD
 pip install meson mako packaging pyyaml
-=======
-pip install meson mako
->>>>>>> 925d7ca (fix: use python venv to install newer meson version for mesa build)
 
 # 2. Build isolated RADV (Mesa 3D)
 echo "[+] Setting up isolated RADV (Mesa 3D)..."
