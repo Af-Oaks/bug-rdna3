@@ -1,0 +1,48 @@
+=== Compiler Comparison Summary ===
+Shader: src/test_vopd/test_vopd.comp
+
+Diff: ACO_ORIGINAL vs ACO_CUSTOM
+
+Diff: ACO_ORIGINAL vs LLVM
+--- src/test_vopd/test_vopd_aco_original.asm	2026-03-08 23:25:31.669486209 -0300
++++ src/test_vopd/test_vopd_llvm.asm	2026-03-08 23:25:31.672308107 -0300
+@@ -1,21 +1,20 @@
+ disasm:
+-BB0:
+-	s_mov_b32 s0, s3                                            ; be800003
+-	s_movk_i32 s3, 0x8000                                       ; b0038000
+-	s_load_b128 s[4:7], s[2:3], null                            ; f4080101 f8000000
+-	v_lshl_add_u32 v0, s0, 6, v0                                ; d6460000 04010c00
+-	s_delay_alu instid0(VALU_DEP_1)                             ; bf870001
+-	v_lshlrev_b32_e32 v0, 5, v0                                 ; 30000085
+-	s_waitcnt lgkmcnt(0)                                        ; bf89fc07
+-	s_clause 0x1                                                ; bf850001
+-	buffer_load_b128 v[4:7], v0, s[4:7], 0 offen                ; e05c0000 80410400
+-	buffer_load_b64 v[2:3], v0, s[4:7], 0 offen offset:16       ; e0540010 80410200
+-	s_waitcnt vmcnt(1)                                          ; bf8907f7
+-	v_fmac_f32_e32 v6, v4, v5                                   ; 560c0b04
+-	s_waitcnt vmcnt(0)                                          ; bf8903f7
+-	v_fmac_f32_e32 v3, v7, v2                                   ; 56060507
+-	s_delay_alu instid0(VALU_DEP_1)                             ; bf870001
+-	v_mov_b32_e32 v7, v3                                        ; 7e0e0303
+-	buffer_store_b64 v[6:7], v0, s[4:7], 0 offen offset:24      ; e06c0018 80410600
+-	s_endpgm                                                    ; bfb00000
++main:
++BB0_0:
++	s_mov_b32 s0, s3                                       ; BE800003
++	s_movk_i32 s3, 0x8000                                  ; B0038000
++	s_lshl_b32 s0, s0, 6                                   ; 84008600
++	s_load_b128 s[4:7], s[2:3], 0x0                        ; F4080101 F8000000
++	v_add_lshl_u32 v6, s0, v0, 5                           ; D6470006 02160000
++	s_waitcnt lgkmcnt(0)                                   ; BF89FC07
++	s_clause 0x1                                           ; BF850001
++	buffer_load_b128 v[0:3], v6, s[4:7], 0 offen           ; E05C0000 80410006
++	buffer_load_b64 v[4:5], v6, s[4:7], 0 offen offset:16  ; E0540010 80410406
++	s_waitcnt vmcnt(0)                                     ; BF8903F7
++	v_fmac_f32_e32 v5, v3, v4                              ; 560A0903
++	v_fma_f32 v4, v0, v1, v2                               ; D6130004 040A0300
++	buffer_store_b64 v[4:5], v6, s[4:7], 0 offen offset:24 ; E06C0018 80410406
++	s_nop 0                                                ; BF800000
++	s_sendmsg sendmsg(MSG_DEALLOC_VGPRS)                   ; BFB60003
++	s_endpgm                                               ; BFB00000
+ 

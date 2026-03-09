@@ -80,3 +80,7 @@ cd ../..
 echo "[+] Setup Complete!"
 echo "RADV ICD is located at: ${INSTALL_PREFIX}/share/vulkan/icd.d/radeon_icd.x86_64.json"
 echo "Fossilize binaries are in: ${INSTALL_PREFIX}/bin/"
+
+# 4. Build Custom ACO Variant
+echo "[+] Initializing Custom ACO Compiler Variant..."
+"${PROJECT_ROOT}/scripts/build_custom_aco.sh"
