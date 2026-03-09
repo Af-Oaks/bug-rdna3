@@ -19,7 +19,7 @@ sudo apt-get install -y \
     libxcb-present-dev libxshmfence-dev libxrandr-dev libwayland-dev \
     wayland-protocols libelf-dev zlib1g-dev python3-pip python3-setuptools \
     git pciutils wget jq cmake clang-tools linux-headers-generic \
-    glslang-tools spirv-tools
+    glslang-tools spirv-tools python3-venv
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_ROOT"
@@ -28,6 +28,12 @@ cd "$PROJECT_ROOT"
 mkdir -p lib
 mkdir -p build/install
 INSTALL_PREFIX="$PROJECT_ROOT/build/install"
+
+echo "[+] Setting up Python virtual environment for latest Meson..."
+python3 -m venv build/venv
+source build/venv/bin/activate
+pip install --upgrade pip
+pip install meson mako
 
 # 2. Build isolated RADV (Mesa 3D)
 echo "[+] Setting up isolated RADV (Mesa 3D)..."
@@ -41,12 +47,14 @@ else
 fi
 
 echo "[+] Configuring Mesa RADV via Meson..."
-meson setup ../../build/mesa \
-    --prefix="${INSTALL_PREFIX}" \
-    -Dgallium-drivers= \
-    -Dvulkan-drivers=amd \
-    -Dbuildtype=debugoptimized \
-    -Dllvm=enabled || echo "Mesa already configured, proceeding to build..."
+if [ ! -f "../../build/mesa/build.ninja" ]; then
+    meson setup ../../build/mesa \
+        --prefix="${INSTALL_PREFIX}" \
+        -Dgallium-drivers= \
+        -Dvulkan-drivers=amd \
+        -Dbuildtype=debugoptimized \
+        -Dllvm=enabled
+fi
 
 echo "[+] Compiling and Installing Mesa RADV..."
 ninja -C ../../build/mesa install
