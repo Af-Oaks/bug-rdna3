@@ -1,24 +1,28 @@
 #version 450
 layout(local_size_x = 64) in; // Tamanho de Workgroup. Ideal para forçar ou testar Waves.
 
-layout(set = 0, binding = 0) buffer Data {
+struct BufferData {
     float in_a; float in_b; float in_c;
     float in_d; float in_e; float in_f;
     float out_1; float out_2;
+};
+
+layout(std430, set = 0, binding = 0) buffer Data {
+    BufferData data[];
 };
 
 void main() {
     uint id = gl_GlobalInvocationID.x;
     
     // Carregamento para VGPRs físicos. O compilador tentará alocar registradores sequenciais.
-    float v2 = in_a[id]; float v3 = in_b[id]; float v4 = in_c[id];
-    float v6 = in_d[id]; float v7 = in_e[id]; float v8 = in_f[id];
+    float v2 = data[id].in_a; float v3 = data[id].in_b; float v4 = data[id].in_c;
+    float v6 = data[id].in_d; float v7 = data[id].in_e; float v8 = data[id].in_f;
 
     // O alvo do teste: Operações matemáticas perfeitamente independentes.
     float v1 = fma(v2, v3, v4);
     float v5 = fma(v6, v7, v8);
 
     // Escrita na VRAM para evitar DCE (Dead Code Elimination)
-    out_1[id] = v1;
-    out_2[id] = v5;
+    data[id].out_1 = v1;
+    data[id].out_2 = v5;
 }

@@ -23,15 +23,35 @@ Ferramental e Stack Tecnológico:
 
     Observabilidade de Baixo Nível: Ferramenta AMD UMR (User Mode Register Debugger) para extrair o estado das Waves, conteúdo de registradores (SGPRs/VGPRs) e o PC (Program Counter) exato no momento de um travamento da GPU. Variáveis de ambiente como RADV_DEBUG=shaders,hang,nocache.
 
-## Estrutura do Projeto
+## Estrutura do Projeto e Fluxo de Compilação Customizada
 
-O projeto foi reestruturado para maior organização:
+O projeto foi reestruturado para suportar o desenvolvimento isolado da nossa própria versão do compilador (ACO Custom):
 
+*   **`custom_mesa_layer/`**: Contém estritamente os arquivos fonte modificados do nosso compilador ACO. Esta pasta espelha o caminho do Mesa (ex: `custom_mesa_layer/src/amd/compiler/`). As modificações na heurística de hardware (remoção de s_delay_alu, forçar VOPD) ocorrerão **aqui**.
 *   **`scripts/`**: Contém todos os scripts utilitários.
-    *   `setup_env.sh`: Inicializa as dependências, baixa e compila isoladamente o Mesa RADV e o Fossilize.
-    *   `gpu_test_runner.sh`: Padronizador de testes com injeção de variáveis RADV e dumps UMR automáticos.
-    *   `test_fossilize.sh`: Disseca e compara a compilação do ISA via Fossilize para ACO e LLVM.
-*   **`src/`** (ou shaders): Código-fonte e compute shaders (ex: `test_vopd.comp`) para validação das hipóteses.
-*   **`lib/`**: Repositórios clonados (Mesa, Fossilize) isolados do host (ignorados no Git).
-*   **`build/`**: Artefatos de compilação e o prefixo de instalação (install) que detém a versão customizada do RADV (ignorados no Git).
-*   **`logs/`**: Métricas de execução, logs standard e dumps crús do UMR em caso de crash (ignorados no Git).
+    *   `setup_env.sh`: Inicializa dependências e compila o driver RADV **Original** (`build/install`).
+    *   `build_custom_aco.sh`: Sincroniza o `custom_mesa_layer` para dentro da árvore do Mesa e compila nossa versão isolada do driver para `build/install_custom`.
+    *   `gpu_test_runner.sh`: Padronizador de execução aceitando `--compiler [ACO_ORIGINAL|ACO_CUSTOM|LLVM]`.
+    *   `test_fossilize.sh`: Extrai e compara o Assembly (ISA) de todas as 3 versões de compiladores e gera um arquivo de diff summary.
+*   **`src/`** (Testes): Cada teste de hardware deve possuir sua própria subpasta auto-contida (ex: `src/test_vopd/test_vopd.comp`). Todos os artefatos de compilação (`.spv`, `.foz`, `.asm`, `.diff`) correspondentes a essa execução serão salvos ao lado do código fonte, garantindo limpeza visual e rastreabilidade.
+*   **`lib/`**: Repositórios base clonados (`mesa`, `Fossilize`) (Ignorado no Git).
+*   **`build/`**: Artefatos intermediários e os prefixos `install/` e `install_custom/` (Ignorado no Git).
+*   **`logs/`**: Métricas de telemetria e core dumps (Ignorado no Git).
+
+## Executando Experimentos e Modificando o Compilador
+
+**1. Alterando o Compilador:**
+Modifique livremente os arquivos em `custom_mesa_layer/src/amd/compiler/` (ex: `aco_scheduler.cpp`).
+Após salvar, aplique a nova versão na máquina compilando o seu driver customizado:
+
+```bash
+./scripts/build_custom_aco.sh
+```
+
+**2. Inspecionando o Comportamento (Diff):**
+Para dissecar shaders e observar a diferença entre o escalonamento Original, o da AMD (LLVM) e o seu Customizado:
+
+```bash
+./scripts/test_fossilize.sh src/test_vopd/test_vopd.comp
+```
+O script gerará o arquivo `src/test_vopd/test_vopd_summary.diff` contendo exatamente quais instruções a sua modificação no compilador adicionou ou removeu em relação ao hardware de fábrica.

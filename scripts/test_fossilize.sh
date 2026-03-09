@@ -33,15 +33,39 @@ if ! command -v glslangValidator &> /dev/null; then
 fi
 
 BASENAME=$(basename "$INPUT_SHADER" .comp)
-SPV_OUT="${BASENAME}.spv"
+DIRNAME=$(dirname "$INPUT_SHADER")
+SPV_OUT="${DIRNAME}/${BASENAME}.spv"
+FOZ_OUT="${DIRNAME}/${BASENAME}.foz"
 
 echo "[+] Compiling ${INPUT_SHADER} to SPIR-V..."
 glslangValidator -V "$INPUT_SHADER" -o "$SPV_OUT"
 
-echo "[+] Running gpu_test_runner to extract ACO ISA..."
-"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler ACO -- "$FOSSILIZE_DISASM" "$SPV_OUT" > "${BASENAME}_aco.asm" 2>&1
+echo "[+] Creating Fossilize database..."
+"${INSTALL_PREFIX}/bin/fossilize-synth" --comp "${SPV_OUT}" --output "${FOZ_OUT}"
+
+echo "[+] Running gpu_test_runner to extract ACO_ORIGINAL ISA..."
+"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler ACO_ORIGINAL -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${FOZ_OUT}" > "${DIRNAME}/${BASENAME}_aco_original.asm" 2>&1
+
+echo "[+] Running gpu_test_runner to extract ACO_CUSTOM ISA..."
+if [ -d "${PROJECT_ROOT}/build/install_custom" ]; then
+    "${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler ACO_CUSTOM -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${FOZ_OUT}" > "${DIRNAME}/${BASENAME}_aco_custom.asm" 2>&1
+else
+    echo "Warning: Custom ACO not found at ${PROJECT_ROOT}/build/install_custom. Skipping. Run build_custom_aco.sh."
+    touch "${DIRNAME}/${BASENAME}_aco_custom.asm"
+fi
 
 echo "[+] Running gpu_test_runner to extract LLVM ISA..."
-"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler LLVM -- "$FOSSILIZE_DISASM" "$SPV_OUT" > "${BASENAME}_llvm.asm" 2>&1
+"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler LLVM -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${FOZ_OUT}" > "${DIRNAME}/${BASENAME}_llvm.asm" 2>&1
 
-echo "[+] Test finished. Look at ${BASENAME}_aco.asm and ${BASENAME}_llvm.asm for results."
+echo "[+] Generating Summary Diff..."
+SUMMARY_FILE="${DIRNAME}/${BASENAME}_summary.diff"
+echo "=== Compiler Comparison Summary ===" > "$SUMMARY_FILE"
+echo "Shader: $INPUT_SHADER" >> "$SUMMARY_FILE"
+echo "" >> "$SUMMARY_FILE"
+echo "Diff: ACO_ORIGINAL vs ACO_CUSTOM" >> "$SUMMARY_FILE"
+diff -u "${DIRNAME}/${BASENAME}_aco_original.asm" "${DIRNAME}/${BASENAME}_aco_custom.asm" >> "$SUMMARY_FILE" || true
+echo "" >> "$SUMMARY_FILE"
+echo "Diff: ACO_ORIGINAL vs LLVM" >> "$SUMMARY_FILE"
+diff -u "${DIRNAME}/${BASENAME}_aco_original.asm" "${DIRNAME}/${BASENAME}_llvm.asm" >> "$SUMMARY_FILE" || true
+
+echo "[+] Test finished. Look at ${DIRNAME} for results and ${BASENAME}_summary.diff."
