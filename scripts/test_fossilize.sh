@@ -38,10 +38,13 @@ SPV_OUT="${BASENAME}.spv"
 echo "[+] Compiling ${INPUT_SHADER} to SPIR-V..."
 glslangValidator -V "$INPUT_SHADER" -o "$SPV_OUT"
 
+echo "[+] Creating Fossilize database..."
+"${INSTALL_PREFIX}/bin/fossilize-synth" --comp "${SPV_OUT}" --output "${BASENAME}.foz"
+
 echo "[+] Running gpu_test_runner to extract ACO ISA..."
-"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler ACO -- "$FOSSILIZE_DISASM" "$SPV_OUT" > "${BASENAME}_aco.asm" 2>&1
+"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler ACO -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${BASENAME}.foz" > "${BASENAME}_aco.asm" 2>&1
 
 echo "[+] Running gpu_test_runner to extract LLVM ISA..."
-"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler LLVM -- "$FOSSILIZE_DISASM" "$SPV_OUT" > "${BASENAME}_llvm.asm" 2>&1
+"${PROJECT_ROOT}/scripts/gpu_test_runner.sh" --compiler LLVM -- "${INSTALL_PREFIX}/bin/fossilize-replay" "${BASENAME}.foz" > "${BASENAME}_llvm.asm" 2>&1
 
 echo "[+] Test finished. Look at ${BASENAME}_aco.asm and ${BASENAME}_llvm.asm for results."
