@@ -1,0 +1,396 @@
+Fossilize INFO: Enumerated GPU #0:
+Fossilize INFO:   name: llvmpipe (LLVM 20.1.2, 256 bits)
+Fossilize INFO:   apiVersion: 1.4.318
+Fossilize INFO: Chose GPU:
+Fossilize INFO:   name: llvmpipe (LLVM 20.1.2, 256 bits)
+Fossilize INFO:   apiVersion: 1.4.318
+Fossilize INFO:   vendorID: 0x10005
+Fossilize INFO:   deviceID: 0x0
+Fossilize INFO: Enabling device extension: VK_KHR_8bit_storage
+Fossilize INFO: Enabling device extension: VK_KHR_16bit_storage
+Fossilize INFO: Enabling device extension: VK_KHR_acceleration_structure
+Fossilize INFO: Enabling device extension: VK_KHR_bind_memory2
+Fossilize INFO: Enabling device extension: VK_KHR_buffer_device_address
+Fossilize INFO: Enabling device extension: VK_KHR_compute_shader_derivatives
+Fossilize INFO: Enabling device extension: VK_KHR_copy_commands2
+Fossilize INFO: Enabling device extension: VK_KHR_create_renderpass2
+Fossilize INFO: Enabling device extension: VK_KHR_dedicated_allocation
+Fossilize INFO: Enabling device extension: VK_KHR_deferred_host_operations
+Fossilize INFO: Enabling device extension: VK_KHR_depth_stencil_resolve
+Fossilize INFO: Enabling device extension: VK_KHR_descriptor_update_template
+Fossilize INFO: Enabling device extension: VK_KHR_device_group
+Fossilize INFO: Enabling device extension: VK_KHR_draw_indirect_count
+Fossilize INFO: Enabling device extension: VK_KHR_driver_properties
+Fossilize INFO: Enabling device extension: VK_KHR_dynamic_rendering
+Fossilize INFO: Enabling device extension: VK_KHR_dynamic_rendering_local_read
+Fossilize INFO: Enabling device extension: VK_KHR_external_fence
+Fossilize INFO: Enabling device extension: VK_KHR_external_memory
+Fossilize INFO: Enabling device extension: VK_KHR_external_memory_fd
+Fossilize INFO: Enabling device extension: VK_KHR_external_semaphore
+Fossilize INFO: Enabling device extension: VK_KHR_format_feature_flags2
+Fossilize INFO: Enabling device extension: VK_KHR_get_memory_requirements2
+Fossilize INFO: Enabling device extension: VK_KHR_global_priority
+Fossilize INFO: Enabling device extension: VK_KHR_image_format_list
+Fossilize INFO: Enabling device extension: VK_KHR_imageless_framebuffer
+Fossilize INFO: Enabling device extension: VK_KHR_incremental_present
+Fossilize INFO: Enabling device extension: VK_KHR_index_type_uint8
+Fossilize INFO: Enabling device extension: VK_KHR_line_rasterization
+Fossilize INFO: Enabling device extension: VK_KHR_load_store_op_none
+Fossilize INFO: Enabling device extension: VK_KHR_maintenance1
+Fossilize INFO: Enabling device extension: VK_KHR_maintenance2
+Fossilize INFO: Enabling device extension: VK_KHR_maintenance3
+Fossilize INFO: Enabling device extension: VK_KHR_maintenance4
+Fossilize INFO: Enabling device extension: VK_KHR_maintenance5
+Fossilize INFO: Enabling device extension: VK_KHR_maintenance6
+Fossilize INFO: Enabling device extension: VK_KHR_maintenance7
+Fossilize INFO: Enabling device extension: VK_KHR_maintenance8
+Fossilize INFO: Enabling device extension: VK_KHR_map_memory2
+Fossilize INFO: Enabling device extension: VK_KHR_multiview
+Fossilize INFO: Enabling device extension: VK_KHR_pipeline_library
+Fossilize INFO: Enabling device extension: VK_KHR_push_descriptor
+Fossilize INFO: Enabling device extension: VK_KHR_ray_query
+Fossilize INFO: Enabling device extension: VK_KHR_ray_tracing_maintenance1
+Fossilize INFO: Enabling device extension: VK_KHR_ray_tracing_pipeline
+Fossilize INFO: Enabling device extension: VK_KHR_ray_tracing_position_fetch
+Fossilize INFO: Enabling device extension: VK_KHR_relaxed_block_layout
+Fossilize INFO: Enabling device extension: VK_KHR_sampler_mirror_clamp_to_edge
+Fossilize INFO: Enabling device extension: VK_KHR_sampler_ycbcr_conversion
+Fossilize INFO: Enabling device extension: VK_KHR_separate_depth_stencil_layouts
+Fossilize INFO: Enabling device extension: VK_KHR_shader_atomic_int64
+Fossilize INFO: Enabling device extension: VK_KHR_shader_clock
+Fossilize INFO: Enabling device extension: VK_KHR_shader_draw_parameters
+Fossilize INFO: Enabling device extension: VK_KHR_shader_expect_assume
+Fossilize INFO: Enabling device extension: VK_KHR_shader_float16_int8
+Fossilize INFO: Enabling device extension: VK_KHR_shader_float_controls
+Fossilize INFO: Enabling device extension: VK_KHR_shader_float_controls2
+Fossilize INFO: Enabling device extension: VK_KHR_shader_integer_dot_product
+Fossilize INFO: Enabling device extension: VK_KHR_shader_maximal_reconvergence
+Fossilize INFO: Enabling device extension: VK_KHR_shader_non_semantic_info
+Fossilize INFO: Enabling device extension: VK_KHR_shader_quad_control
+Fossilize INFO: Enabling device extension: VK_KHR_shader_relaxed_extended_instruction
+Fossilize INFO: Enabling device extension: VK_KHR_shader_subgroup_extended_types
+Fossilize INFO: Enabling device extension: VK_KHR_shader_subgroup_rotate
+Fossilize INFO: Enabling device extension: VK_KHR_shader_terminate_invocation
+Fossilize INFO: Enabling device extension: VK_KHR_spirv_1_4
+Fossilize INFO: Enabling device extension: VK_KHR_storage_buffer_storage_class
+Fossilize INFO: Enabling device extension: VK_KHR_swapchain
+Fossilize INFO: Enabling device extension: VK_KHR_swapchain_mutable_format
+Fossilize INFO: Enabling device extension: VK_KHR_synchronization2
+Fossilize INFO: Enabling device extension: VK_KHR_timeline_semaphore
+Fossilize INFO: Enabling device extension: VK_KHR_uniform_buffer_standard_layout
+Fossilize INFO: Enabling device extension: VK_KHR_variable_pointers
+Fossilize INFO: Enabling device extension: VK_KHR_vertex_attribute_divisor
+Fossilize INFO: Enabling device extension: VK_KHR_vulkan_memory_model
+Fossilize INFO: Enabling device extension: VK_KHR_workgroup_memory_explicit_layout
+Fossilize INFO: Enabling device extension: VK_KHR_zero_initialize_workgroup_memory
+Fossilize INFO: Enabling device extension: VK_EXT_4444_formats
+Fossilize INFO: Enabling device extension: VK_EXT_attachment_feedback_loop_dynamic_state
+Fossilize INFO: Enabling device extension: VK_EXT_attachment_feedback_loop_layout
+Fossilize INFO: Enabling device extension: VK_EXT_border_color_swizzle
+Fossilize INFO: Enabling device extension: VK_EXT_calibrated_timestamps
+Fossilize INFO: Enabling device extension: VK_EXT_color_write_enable
+Fossilize INFO: Enabling device extension: VK_EXT_conditional_rendering
+Fossilize INFO: Enabling device extension: VK_EXT_custom_border_color
+Fossilize INFO: Enabling device extension: VK_EXT_depth_bias_control
+Fossilize INFO: Enabling device extension: VK_EXT_depth_clip_control
+Fossilize INFO: Enabling device extension: VK_EXT_depth_clip_enable
+Fossilize INFO: Enabling device extension: VK_EXT_depth_range_unrestricted
+Fossilize INFO: Enabling device extension: VK_ANDROID_external_memory_android_hardware_buffer
+Fossilize INFO: Enabling device extension: VK_EXT_descriptor_indexing
+Fossilize INFO: Enabling device extension: VK_EXT_device_generated_commands
+Fossilize INFO: Enabling device extension: VK_EXT_dynamic_rendering_unused_attachments
+Fossilize INFO: Enabling device extension: VK_EXT_extended_dynamic_state
+Fossilize INFO: Enabling device extension: VK_EXT_extended_dynamic_state2
+Fossilize INFO: Enabling device extension: VK_EXT_extended_dynamic_state3
+Fossilize INFO: Enabling device extension: VK_EXT_external_memory_dma_buf
+Fossilize INFO: Enabling device extension: VK_EXT_external_memory_host
+Fossilize INFO: Enabling device extension: VK_EXT_fragment_shader_interlock
+Fossilize INFO: Enabling device extension: VK_EXT_graphics_pipeline_library
+Fossilize INFO: Enabling device extension: VK_EXT_hdr_metadata
+Fossilize INFO: Enabling device extension: VK_EXT_host_image_copy
+Fossilize INFO: Enabling device extension: VK_EXT_host_query_reset
+Fossilize INFO: Enabling device extension: VK_EXT_ycbcr_image_arrays
+Fossilize INFO: Enabling device extension: VK_GOOGLE_decorate_string
+Fossilize INFO: Enabling device extension: VK_EXT_image_sliced_view_of_3d
+Fossilize INFO: Enabling device extension: VK_EXT_index_type_uint8
+Fossilize INFO: Enabling device extension: VK_EXT_inline_uniform_block
+Fossilize INFO: Enabling device extension: VK_EXT_legacy_vertex_attributes
+Fossilize INFO: Enabling device extension: VK_EXT_line_rasterization
+Fossilize INFO: Enabling device extension: VK_EXT_load_store_op_none
+Fossilize INFO: Enabling device extension: VK_EXT_memory_budget
+Fossilize INFO: Enabling device extension: VK_EXT_memory_priority
+Fossilize INFO: Enabling device extension: VK_ARM_rasterization_order_attachment_access
+Fossilize INFO: Enabling device extension: VK_EXT_multi_draw
+Fossilize INFO: Enabling device extension: VK_EXT_multisampled_render_to_single_sampled
+Fossilize INFO: Enabling device extension: VK_EXT_mutable_descriptor_type
+Fossilize INFO: Enabling device extension: VK_EXT_nested_command_buffer
+Fossilize INFO: Enabling device extension: VK_EXT_non_seamless_cube_map
+Fossilize INFO: Enabling device extension: VK_EXT_pageable_device_local_memory
+Fossilize INFO: Enabling device extension: VK_EXT_pipeline_creation_cache_control
+Fossilize INFO: Enabling device extension: VK_EXT_pipeline_creation_feedback
+Fossilize INFO: Enabling device extension: VK_EXT_pipeline_library_group_handles
+Fossilize INFO: Enabling device extension: VK_EXT_pipeline_protected_access
+Fossilize INFO: Enabling device extension: VK_EXT_pipeline_robustness
+Fossilize INFO: Enabling device extension: VK_EXT_post_depth_coverage
+Fossilize INFO: Enabling device extension: VK_EXT_primitive_topology_list_restart
+Fossilize INFO: Enabling device extension: VK_EXT_zero_initialize_device_memory
+Fossilize INFO: Enabling device extension: VK_EXT_private_data
+Fossilize INFO: Enabling device extension: VK_EXT_provoking_vertex
+Fossilize INFO: Enabling device extension: VK_EXT_queue_family_foreign
+Fossilize INFO: Enabling device extension: VK_EXT_rasterization_order_attachment_access
+Fossilize INFO: Enabling device extension: VK_GOOGLE_hlsl_functionality1
+Fossilize INFO: Enabling device extension: VK_EXT_sampler_filter_minmax
+Fossilize INFO: Enabling device extension: VK_EXT_scalar_block_layout
+Fossilize INFO: Enabling device extension: VK_EXT_separate_stencil_usage
+Fossilize INFO: Enabling device extension: VK_EXT_shader_atomic_float
+Fossilize INFO: Enabling device extension: VK_EXT_shader_atomic_float2
+Fossilize INFO: Enabling device extension: VK_EXT_shader_demote_to_helper_invocation
+Fossilize INFO: Enabling device extension: VK_EXT_shader_image_atomic_int64
+Fossilize INFO: Enabling device extension: VK_AMDX_shader_enqueue
+Fossilize INFO: Enabling device extension: VK_EXT_shader_replicated_composites
+Fossilize INFO: Enabling device extension: VK_EXT_shader_stencil_export
+Fossilize INFO: Enabling device extension: VK_EXT_shader_subgroup_ballot
+Fossilize INFO: Enabling device extension: VK_EXT_shader_subgroup_vote
+Fossilize INFO: Enabling device extension: VK_EXT_shader_viewport_index_layer
+Fossilize INFO: Enabling device extension: VK_EXT_subgroup_size_control
+Fossilize INFO: Enabling device extension: VK_EXT_swapchain_maintenance1
+Fossilize INFO: Enabling device extension: VK_EXT_texel_buffer_alignment
+Fossilize INFO: Enabling device extension: VK_EXT_tooling_info
+Fossilize INFO: Enabling device extension: VK_EXT_transform_feedback
+Fossilize INFO: Enabling device extension: VK_EXT_vertex_attribute_divisor
+Fossilize INFO: Enabling device extension: VK_EXT_vertex_input_dynamic_state
+Fossilize INFO: Enabling device extension: VK_EXT_ycbcr_2plane_444_formats
+Fossilize INFO: Creating Vulkan device took: 157 ms
+Fossilize INFO: Replaying for application:
+Fossilize INFO:   apiVersion: 1.1.0
+Fossilize INFO:   engineVersion: 0
+Fossilize INFO:   applicationVersion: 0
+Fossilize INFO: Total binary size for AppInfo: 145 (131 compressed)
+Fossilize INFO: Total time decoding AppInfo in main thread: 0.160 s
+Fossilize WARN: Descriptor set layout 00539e2b46296e86 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 00539e2b46296e86). See previous logs for context.
+Fossilize WARN: Descriptor set layout 06899a89a139f85b is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 06899a89a139f85b). See previous logs for context.
+Fossilize WARN: Descriptor set layout 10682eb186f4af6d is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 10682eb186f4af6d). See previous logs for context.
+Fossilize WARN: Descriptor set layout 1469e0cdad1fc415 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 1469e0cdad1fc415). See previous logs for context.
+Fossilize WARN: Descriptor set layout 157cde3178d5e9bb is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 157cde3178d5e9bb). See previous logs for context.
+Fossilize WARN: Descriptor set layout 1d5c74973806fe81 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 1d5c74973806fe81). See previous logs for context.
+Fossilize WARN: Descriptor set layout 1ebe1d3faeb1611e is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 1ebe1d3faeb1611e). See previous logs for context.
+Fossilize WARN: Descriptor set layout 25937c33ebc604c9 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 25937c33ebc604c9). See previous logs for context.
+Fossilize WARN: Descriptor set layout 2d7edf3a6072cc08 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 2d7edf3a6072cc08). See previous logs for context.
+Fossilize WARN: Descriptor set layout 3e06b788f1bd5608 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 3e06b788f1bd5608). See previous logs for context.
+Fossilize WARN: Descriptor set layout 3f94076e3dc8a189 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 3f94076e3dc8a189). See previous logs for context.
+Fossilize WARN: Descriptor set layout 46e3b4da5b2eee81 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 46e3b4da5b2eee81). See previous logs for context.
+Fossilize WARN: Descriptor set layout 526f8cba8b9bc3ac is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 526f8cba8b9bc3ac). See previous logs for context.
+Fossilize WARN: Descriptor set layout 57dbd7c56e64d480 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 57dbd7c56e64d480). See previous logs for context.
+Fossilize WARN: Descriptor set layout 5b62a7a9b8d92839 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 5b62a7a9b8d92839). See previous logs for context.
+Fossilize WARN: Descriptor set layout 5c2e2f2fd21333dd is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 5c2e2f2fd21333dd). See previous logs for context.
+Fossilize WARN: Descriptor set layout 6b8299529f250d01 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 6b8299529f250d01). See previous logs for context.
+Fossilize WARN: Descriptor set layout 6b829952e0daf2ff is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 6b829952e0daf2ff). See previous logs for context.
+Fossilize WARN: Descriptor set layout 6b829a529f250e93 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 6b829a529f250e93). See previous logs for context.
+Fossilize WARN: Descriptor set layout 6b829c529f251239 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 6b829c529f251239). See previous logs for context.
+Fossilize WARN: Descriptor set layout 6b829d529f2513dc is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 6b829d529f2513dc). See previous logs for context.
+Fossilize WARN: Descriptor set layout 6b829e529f25155f is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 6b829e529f25155f). See previous logs for context.
+Fossilize WARN: Descriptor set layout 788bdbec6d4dba02 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 788bdbec6d4dba02). See previous logs for context.
+Fossilize WARN: Descriptor set layout 885a3b5e796ab2d4 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 885a3b5e796ab2d4). See previous logs for context.
+Fossilize WARN: Descriptor set layout 88a5fd4de069e3a5 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 88a5fd4de069e3a5). See previous logs for context.
+Fossilize WARN: Descriptor set layout 8a9f3b96908c5118 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: 8a9f3b96908c5118). See previous logs for context.
+Fossilize WARN: Descriptor set layout af85db740c1afe44 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: af85db740c1afe44). See previous logs for context.
+Fossilize WARN: Descriptor set layout b074489b8d5d11a8 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: b074489b8d5d11a8). See previous logs for context.
+Fossilize WARN: Descriptor set layout cb4d164e36b640ba is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: cb4d164e36b640ba). See previous logs for context.
+Fossilize WARN: Descriptor set layout da2f35a7e3bd737b is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: da2f35a7e3bd737b). See previous logs for context.
+Fossilize WARN: Descriptor set layout fc1ebae1645c2070 is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: fc1ebae1645c2070). See previous logs for context.
+Fossilize WARN: Descriptor set layout feca9f1890ad614d is not supported. Skipping.
+Fossilize WARN: Did not replay blob (tag: Descriptor Set Layout, hash: feca9f1890ad614d). See previous logs for context.
+Fossilize INFO: Total binary size for Descriptor Set Layout: 12668 (6234 compressed)
+Fossilize INFO: Total time decoding Descriptor Set Layout in main thread: 0.001 s
+Fossilize WARN: Referenced Descriptor set layout 6b829e529f25155f, but it is VK_NULL_HANDLE.
+The create info was likely not supported by device.
+Fossilize WARN: Did not replay blob (tag: Pipeline Layout, hash: 145381e970389036). See previous logs for context.
+Fossilize WARN: Referenced Descriptor set layout cb4d164e36b640ba, but it is VK_NULL_HANDLE.
+The create info was likely not supported by device.
+Fossilize WARN: Did not replay blob (tag: Pipeline Layout, hash: 2d095fbb270dd863). See previous logs for context.
+Fossilize WARN: Referenced Descriptor set layout 00539e2b46296e86, but it is VK_NULL_HANDLE.
+The create info was likely not supported by device.
+Fossilize WARN: Did not replay blob (tag: Pipeline Layout, hash: 43f424e73c9defd4). See previous logs for context.
+Fossilize WARN: Referenced Descriptor set layout 6b829c529f251239, but it is VK_NULL_HANDLE.
+The create info was likely not supported by device.
+Fossilize WARN: Did not replay blob (tag: Pipeline Layout, hash: 60b0ca871424f7f0). See previous logs for context.
+Fossilize WARN: Referenced Descriptor set layout 6b829a529f250e93, but it is VK_NULL_HANDLE.
+The create info was likely not supported by device.
+Fossilize WARN: Did not replay blob (tag: Pipeline Layout, hash: 6d2fd34d4c45eafa). See previous logs for context.
+Fossilize WARN: Referenced Descriptor set layout cb4d164e36b640ba, but it is VK_NULL_HANDLE.
+The create info was likely not supported by device.
+Fossilize WARN: Did not replay blob (tag: Pipeline Layout, hash: a204efbad8318893). See previous logs for context.
+Fossilize WARN: Referenced Descriptor set layout 6b829d529f2513dc, but it is VK_NULL_HANDLE.
+The create info was likely not supported by device.
+Fossilize WARN: Did not replay blob (tag: Pipeline Layout, hash: cfb580c99fe1c6bd). See previous logs for context.
+Fossilize WARN: Referenced Descriptor set layout 1ebe1d3faeb1611e, but it is VK_NULL_HANDLE.
+The create info was likely not supported by device.
+Fossilize WARN: Did not replay blob (tag: Pipeline Layout, hash: e89017032e442e08). See previous logs for context.
+Fossilize INFO: Total binary size for Pipeline Layout: 2996 (2949 compressed)
+Fossilize INFO: Total time decoding Pipeline Layout in main thread: 0.000 s
+Fossilize INFO: Total binary size for Render Pass: 2195 (1411 compressed)
+Fossilize INFO: Total time decoding Render Pass in main thread: 0.000 s
+Fossilize INFO: Total binary size for Graphics Pipeline: 4240 (2009 compressed)
+Fossilize INFO: Total binary size for Compute Pipeline: 10027 (7507 compressed)
+Fossilize INFO: Total binary size for Raytracing Pipeline: 0 (0 compressed)
+Fossilize WARN: Referenced Pipeline layout 2d095fbb270dd863, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 6, hash: 0x28aa1b31da2ba7a2). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 2d095fbb270dd863, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 6, hash: 0xfad236d323d37084). See previous logs for context.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module ea9bd70b6abbdb95 is not supported on this device.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module e618ee26510b4af2 is not supported on this device.
+Fossilize ERROR: Invalid graphics create info.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x02cf0a1de7fb4aac). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout e89017032e442e08, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x387a10c845f54733). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout e89017032e442e08, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0xb0dac89f52947b8a). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x56b68d2624991773). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0xa54b8ed01e013182). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 60b0ca871424f7f0, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0xd234959402025f6a). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x3d92c85ae46f2b26). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x140342f0cb39d8dd). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0xe602bbbfb880c387). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0xe05b13ffd070798b). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x521f3d559bacc81b). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x79cf7f512cce1dfc). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 145381e970389036, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x9a6695b5b17ad040). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout a204efbad8318893, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0xf547283fc6c759a5). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 60b0ca871424f7f0, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0xf6b57d3bc973ad30). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout 6d2fd34d4c45eafa, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x522ca7fb5d65f938). See previous logs for context.
+Fossilize WARN: Referenced Pipeline layout e89017032e442e08, but it does not exist.
+This can be expected when replaying an archive from Steam.
+If replaying just the application cache, make sure to replay together with the common cache, as application cache can depend on common cache.
+Fossilize WARN: Did not replay blob (tag: 7, hash: 0x5df0d83cb5e59697). See previous logs for context.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module 4b06d8a4d80c3c25 is not supported on this device.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module cfe74c98774056d is not supported on this device.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module c91c86194d5fc3a9 is not supported on this device.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module ffb819564e94360a is not supported on this device.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module f524f2459a6e5615 is not supported on this device.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module 8051a6129834a788 is not supported on this device.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module b39fb79b28cce6b is not supported on this device.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module a1deabb245c68aaa is not supported on this device.
+Fossilize ERROR: SPIR-V 1.6 is only supported in Vulkan 1.3 and up.
+Fossilize WARN: Shader module 8702e2552be1e1f6 is not supported on this device.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize ERROR: Invalid compute create info.
+Fossilize INFO: Total binary size for Shader Module: 29779 (21576 compressed)
+Fossilize INFO: Opening archive took 0 ms:
+Fossilize INFO: Parsing archive took 0 ms:
+Fossilize INFO: Playing back 15 shader modules took 0.000 s (accumulated time)
+Fossilize INFO: Shader cache evicted 0 shader modules in total
+Fossilize INFO: Playing back 0 graphics pipelines took 0.000 s (accumulated time)
+Fossilize INFO: Playing back 4 compute pipelines took 0.038 s (accumulated time)
+Fossilize INFO: Playing back 0 raytracing pipelines took 0.000 s (accumulated time)
+Fossilize INFO: Threads were idling in total for 0.019 s (accumulated time)
+Fossilize INFO: Threads were active in total for 0.178 s (accumulated time)
+Fossilize INFO: Total peak memory consumption by parser: 1.966 MB.
+Fossilize INFO: Replayed 19 objects in 173 ms:
+Fossilize INFO:   compute pipelines:           4
+Fossilize INFO:   graphics pipelines:          0
+Fossilize INFO:   raytracing pipelines:        0

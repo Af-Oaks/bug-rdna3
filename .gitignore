@@ -29,3 +29,7 @@ venv/
 radeon_gpu_analyzer/
 vulkansdk-linux-x86_64-*.tar.xz
 
+src/shaders/
+src/shaders/*
+pdf_context/*
+pdf_context/
