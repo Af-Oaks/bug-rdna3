@@ -1,0 +1,8 @@
+{
+  "session_id": "replace_me",
+  "notes": "Use this file to annotate manual links between RenderDoc captures, draw calls, and Fossilize objects.",
+  "pipeline_hashes": [],
+  "shader_module_hashes": [],
+  "draw_call_refs": [],
+  "confidence": "strong"
+}

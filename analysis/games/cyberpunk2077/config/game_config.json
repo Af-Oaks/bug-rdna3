@@ -1,0 +1,24 @@
+{
+  "game_slug": "cyberpunk2077",
+  "display_name": "Cyberpunk 2077",
+  "steam_appid": 1091500,
+  "executable_notes": "Document whether capture should target the launcher or the main game executable under Proton.",
+  "proton_notes": "Track the exact Proton version and any RenderDoc compatibility notes observed during capture.",
+  "scene_labels": [
+    "night_city_street_walk",
+    "market_combat_entry",
+    "dense_city_drive"
+  ],
+  "recommended_launch_options": [
+    "Preserve any RADV or Fossilize environment overrides in the session notes.",
+    "Use a stable graphics preset label such as high_1440p or ultra_1440p_rt_off."
+  ],
+  "capture_notes": [
+    "Capture the same scene state used to preserve the `.foz` files for Track B.",
+    "Save at least one screenshot that clearly identifies traffic, crowd density, and camera orientation."
+  ],
+  "expected_foz_location_patterns": [
+    "~/.steam/steam/steamapps/shadercache/1091500/fozpipelinesv6/*.foz",
+    "~/.local/share/Steam/steamapps/shadercache/1091500/fozpipelinesv6/*.foz"
+  ]
+}

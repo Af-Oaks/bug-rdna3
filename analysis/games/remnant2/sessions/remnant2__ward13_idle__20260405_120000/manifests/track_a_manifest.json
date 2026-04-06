@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "manifest_version": "1.0",
+  "session_id": "remnant2__ward13_idle__20260405_120000",
+  "track": "track_a",
+  "status": "prepared_pending_manual_capture",
+  "registered_artifacts": [],
+  "generated_outputs": [],
+  "commands": [
+    {
+      "recorded_at": "2026-04-05T21:57:44+00:00",
+      "command": [
+        "prepare_capture.py",
+        "--session",
+        "remnant2__ward13_idle__20260405_120000"
+      ],
+      "tool_path": ""
+    }
+  ],
+  "notes": [
+    "Track A uses RenderDoc as the primary real-frame capture path. Manual capture is expected."
+  ],
+  "expected_outputs": {
+    "renderdoc_dir": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/track_a_frame_capture/renderdoc",
+    "screenshots_dir": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/track_a_frame_capture/screenshots",
+    "frame_markers_dir": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/track_a_frame_capture/frame_markers",
+    "logs_dir": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/track_a_frame_capture/logs",
+    "instructions": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/track_a_frame_capture/capture_instructions.md"
+  },
+  "updated_at": "2026-04-05T21:57:44+00:00"
+}

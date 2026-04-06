@@ -1,0 +1,252 @@
+[
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "94a8b7989d21a1ac",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15722,
+    "linked_shader_modules": [
+      "686032fd263fccac",
+      "72bb1b2560fe38f3"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  },
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "a98117c1a91123ac",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15721,
+    "linked_shader_modules": [
+      "686032fd263fccac",
+      "d812d372f1562272"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  },
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "255150ee91dc2639",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15720,
+    "linked_shader_modules": [
+      "686032fd263fccac",
+      "82f4d3db352740ea"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  },
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "d4f4ca159d7cfebc",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15719,
+    "linked_shader_modules": [
+      "686032fd263fccac",
+      "c67b0e6a7d089bea"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  },
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "2304190f5e17ef1a",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15718,
+    "linked_shader_modules": [
+      "686032fd263fccac",
+      "bf3b7919a7f318a1"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  },
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "554b6c2ce20d1711",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15718,
+    "linked_shader_modules": [
+      "686032fd263fccac",
+      "8f0e37f6190dd051"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  },
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "6048f86dba621ae3",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15718,
+    "linked_shader_modules": [
+      "23211609685446ea",
+      "686032fd263fccac"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  },
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "9814938dbd7e9cfa",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15718,
+    "linked_shader_modules": [
+      "686032fd263fccac",
+      "df80d3b93e2322a1"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  },
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "d6359f51885c823a",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15718,
+    "linked_shader_modules": [
+      "686032fd263fccac",
+      "7951dbb265bb8038"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  },
+  {
+    "session_id": "remnant2__ward13_idle__20260405_120000",
+    "pipeline_hash": "2189889751c66985",
+    "pipeline_type": "graphicsPipeline",
+    "inspection_priority_score": 15717,
+    "linked_shader_modules": [
+      "208f3b768930c255",
+      "686032fd263fccac"
+    ],
+    "reasons": [
+      "large_fossilize_object_size",
+      "multiple_linked_shader_modules",
+      "reused_shader_modules"
+    ],
+    "method_notes": "This is an inspection-priority heuristic, not a runtime hotness metric.",
+    "track_a_match": {
+      "confidence": "unresolved",
+      "match_basis": [
+        "same_session_id",
+        "same_game_slug",
+        "same_scene_slug"
+      ],
+      "notes": "Exact Track A pipeline linkage requires RenderDoc exports or manual annotation."
+    }
+  }
+]

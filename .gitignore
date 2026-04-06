@@ -33,3 +33,9 @@ src/shaders/
 src/shaders/*
 pdf_context/*
 pdf_context/
+
+isa_dumps/
+isa_dumps/*
+
+gfxreconstruct/
+gfxreconstruct/*

@@ -1,0 +1,25 @@
+{
+  "game_slug": "remnant2",
+  "display_name": "Remnant II",
+  "steam_appid": 1282100,
+  "executable_notes": "Confirm the exact Steam launch path and whether any anti-cheat or launcher layer affects capture.",
+  "proton_notes": "Use the same Proton version across comparison runs when possible.",
+  "scene_labels": [
+    "ward13_idle",
+    "yaesha_open_area",
+    "combat_encounter_dense_effects"
+  ],
+  "recommended_launch_options": [
+    "Keep the graphics settings profile label stable across repeated captures.",
+    "Preserve any RADV_DEBUG or pipeline cache flags in `capture_environment.json`."
+  ],
+  "capture_notes": [
+    "A sample `.foz` already exists in `src/shaders/remnant2/steamapp_pipeline_cache.foz` and can be used to validate Track B.",
+    "If the scene is dynamic, document what must remain unchanged for repeatability."
+  ],
+  "expected_foz_location_patterns": [
+    "~/.steam/steam/steamapps/shadercache/1282100/fozpipelinesv6/*.foz",
+    "~/.local/share/Steam/steamapps/shadercache/1282100/fozpipelinesv6/*.foz",
+    "src/shaders/remnant2/steamapp_pipeline_cache.foz"
+  ]
+}

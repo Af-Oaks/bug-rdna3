@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GameConfig",
+  "type": "object",
+  "required": [
+    "game_slug",
+    "display_name"
+  ],
+  "properties": {
+    "game_slug": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "steam_appid": {
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
+    "executable_notes": {
+      "type": "string"
+    },
+    "proton_notes": {
+      "type": "string"
+    },
+    "scene_labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_launch_options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "capture_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expected_foz_location_patterns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

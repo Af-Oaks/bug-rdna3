@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "manifest_version": "1.0",
+  "session_id": "remnant2__ward13_idle__20260405_120000",
+  "track": "track_c",
+  "status": "correlation_complete",
+  "registered_artifacts": [
+    "track_c__isa_dump__4a6a5ed326fc",
+    "track_c__compiler_log__4a6a5ed326fc",
+    "track_c__compiler_log__776656c8617f"
+  ],
+  "generated_outputs": [],
+  "commands": [
+    {
+      "recorded_at": "2026-04-05T22:25:19+00:00",
+      "command": [
+        "register_optional_artifacts.py",
+        "--session",
+        "remnant2__ward13_idle__20260405_120000"
+      ],
+      "tool_path": ""
+    },
+    {
+      "recorded_at": "2026-04-05T22:40:53+00:00",
+      "command": [
+        "correlate_session.py",
+        "--session",
+        "remnant2__ward13_idle__20260405_120000"
+      ],
+      "tool_path": ""
+    }
+  ],
+  "notes": [],
+  "updated_at": "2026-04-05T22:40:53+00:00",
+  "summary_outputs": {
+    "correlation_summary_json": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/track_c_correlation/outputs/correlation_summary.json",
+    "correlation_summary_md": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/track_c_correlation/outputs/correlation_summary.md",
+    "pipeline_correlation_csv": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/track_c_correlation/outputs/pipeline_correlation_table.csv",
+    "unresolved_matches_json": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/track_c_correlation/outputs/unresolved_matches.json"
+  }
+}

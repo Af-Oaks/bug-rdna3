@@ -1,0 +1,19 @@
+{
+  "game_slug": "replace_me",
+  "display_name": "Replace Me",
+  "steam_appid": "",
+  "executable_notes": "Document Steam app, executable path, launcher behavior, and any anti-cheat caveats.",
+  "proton_notes": "Document the Proton version and any capture-specific issues under Proton.",
+  "scene_labels": [
+    "replace_scene_label"
+  ],
+  "recommended_launch_options": [
+    "Document launch options here."
+  ],
+  "capture_notes": [
+    "Document RenderDoc hotkey flow and what should be saved after capture."
+  ],
+  "expected_foz_location_patterns": [
+    "~/.steam/steam/steamapps/shadercache/<appid>/fozpipelinesv6/steamapprun_pipeline_cache.foz"
+  ]
+}

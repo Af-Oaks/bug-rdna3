@@ -1,0 +1,19 @@
+{
+  "game_slug": "low_gain_title",
+  "display_name": "Low Gain Comparison Title",
+  "steam_appid": "",
+  "executable_notes": "Replace this placeholder with the chosen low-gain comparison title and executable notes.",
+  "proton_notes": "Document the Proton version used for the low-gain comparison cohort.",
+  "scene_labels": [
+    "replace_with_low_gain_scene"
+  ],
+  "recommended_launch_options": [
+    "Replace this placeholder with the final launch options for the comparison title."
+  ],
+  "capture_notes": [
+    "Use this config as a template for a title that shows weak or minimal gains on RDNA3."
+  ],
+  "expected_foz_location_patterns": [
+    "~/.steam/steam/steamapps/shadercache/<appid>/fozpipelinesv6/*.foz"
+  ]
+}

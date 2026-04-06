@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SessionManifest",
+  "type": "object",
+  "required": [
+    "session_id",
+    "game_slug",
+    "scene_slug",
+    "graphics_settings_profile",
+    "expected_comparison_cohort",
+    "toolchain",
+    "status"
+  ],
+  "properties": {
+    "session_id": {
+      "type": "string"
+    },
+    "game_slug": {
+      "type": "string"
+    },
+    "scene_slug": {
+      "type": "string"
+    },
+    "graphics_settings_profile": {
+      "type": "string"
+    },
+    "expected_comparison_cohort": {
+      "type": "string"
+    },
+    "toolchain": {
+      "type": "object"
+    },
+    "status": {
+      "type": "object"
+    },
+    "manifests": {
+      "type": "object"
+    }
+  }
+}

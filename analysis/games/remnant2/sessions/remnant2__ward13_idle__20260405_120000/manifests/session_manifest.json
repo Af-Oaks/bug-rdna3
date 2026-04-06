@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "manifest_version": "1.0",
+  "session_id": "remnant2__ward13_idle__20260405_120000",
+  "created_at": "2026-04-05T21:57:29+00:00",
+  "updated_at": "2026-04-05T22:40:53+00:00",
+  "game_slug": "remnant2",
+  "scene_slug": "ward13_idle",
+  "graphics_settings_profile": "ultra_1440p",
+  "expected_comparison_cohort": "high_gain_group",
+  "session_root": "/home/methos/Documents/faculdade/TCC_bug_amd/analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000",
+  "game_config_path": "analysis/games/remnant2/config/game_config.json",
+  "toolchain": {
+    "proton_version": "proton_experimental",
+    "mesa_build_info": "local_mesa_build",
+    "radv_build_info": "",
+    "aco_variant_tag": "",
+    "compiler_variant_tag": "baseline"
+  },
+  "operator_context": {
+    "operator_notes_summary": "",
+    "capture_window_notes": ""
+  },
+  "status": {
+    "track_a": "prepared_pending_capture",
+    "track_b": "pipeline_metadata_mined",
+    "track_c": "correlation_complete"
+  },
+  "manifests": {
+    "session_manifest": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/manifests/session_manifest.json",
+    "artifact_registry": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/manifests/artifact_registry.json",
+    "track_a_manifest": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/manifests/track_a_manifest.json",
+    "track_b_manifest": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/manifests/track_b_manifest.json",
+    "track_c_manifest": "analysis/games/remnant2/sessions/remnant2__ward13_idle__20260405_120000/manifests/correlation_manifest.json"
+  }
+}
