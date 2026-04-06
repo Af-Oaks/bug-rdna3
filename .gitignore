@@ -27,6 +27,8 @@ venv/
 .env/
 
 radeon_gpu_analyzer/
+radeon_gpu_analyzer/*
+
 vulkansdk-linux-x86_64-*.tar.xz
 
 src/shaders/
@@ -39,3 +41,8 @@ isa_dumps/*
 
 gfxreconstruct/
 gfxreconstruct/*
+
+analysis/games
+analysis/games/*
+
+rdna3_pipeline_samples.json
