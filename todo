@@ -1,0 +1,118 @@
+that is actually usable.
+
+Thought for 6s
+# 1) Set variables
+APPID=1282100
+SESSION_ID=remnant2__ward13_idle__20260405_120000
+SESSION_DIR="$PWD/analysis/games/remnant2/sessions/${SESSION_ID}"
+mkdir -p "$SESSION_DIR/notes"
+# 2) Record .foz state BEFORE launching the game
+find ~/.steam/steam/steamapps/shadercache/${APPID} \
+     ~/.local/share/Steam/steamapps/shadercache/${APPID} \
+     -path '*/fozpipelinesv6/*.foz' -type f \
+     -printf '%TY-%Tm-%Td %TH:%TM:%TS %s %p\n' 2>/dev/null | sort \
+     > "${SESSION_DIR}/notes/foz_before.txt"
+# 3) Put this in Steam launch options for the game
+ENABLE_VULKAN_RENDERDOC_CAPTURE=1 %command%
+
+Use:
+
+Open Steam.
+Right click the game → Properties.
+In Launch Options, paste:
+ENABLE_VULKAN_RENDERDOC_CAPTURE=1 %command%
+
+This is the Proton/Vulkan RenderDoc capture path.
+
+# 4) Start RenderDoc
+qrenderdoc
+
+Use:
+
+Leave RenderDoc open.
+Launch the game from Steam.
+Enter the exact scene.
+In RenderDoc: File → Attach to Running Instance.
+Select the Proton game process, usually wine-preloader or wine64-preloader.
+Press the capture button in RenderDoc when the scene is exactly where you want it.
+# 5) Save the capture manually from RenderDoc
+# save it as something like:
+# /absolute/path/to/frame.rdc
+#
+# also save one screenshot manually as:
+# /absolute/path/to/frame.png
+
+Use:
+
+After capture, open the captured frame in RenderDoc.
+Save the .rdc.
+Export at least one screenshot.
+# 6) Record .foz state AFTER the capture, same run window
+find ~/.steam/steam/steamapps/shadercache/${APPID} \
+     ~/.local/share/Steam/steamapps/shadercache/${APPID} \
+     -path '*/fozpipelinesv6/*.foz' -type f \
+     -printf '%TY-%Tm-%Td %TH:%TM:%TS %s %p\n' 2>/dev/null | sort \
+     > "${SESSION_DIR}/notes/foz_after.txt"
+# 7) Diff before vs after to identify the .foz changed by this run
+diff -u "${SESSION_DIR}/notes/foz_before.txt" "${SESSION_DIR}/notes/foz_after.txt" \
+  > "${SESSION_DIR}/notes/foz_diff.txt" || true
+
+Use:
+
+Open foz_diff.txt.
+Identify the .foz file whose timestamp and/or size changed during this same run window.
+That is the .foz to register for the same capture session.
+
+Fossilize .foz is pipeline/object state serialization, not full scene replay, so you sync it by same run window and changed cache file, not by visual frame extraction.
+
+# 8) Copy the selected .foz into your session folder
+cp /absolute/path/to/steamapp_pipeline_cache.foz \
+   "${SESSION_DIR}/track_b_pipeline_mining/"
+# 9) Optional: verify file hash
+sha256sum "${SESSION_DIR}/track_b_pipeline_mining/steamapp_pipeline_cache.foz"
+sha256sum /absolute/path/to/frame.rdc
+# 10) If your pipeline scripts already exist, register the RenderDoc capture
+python3 -m scripts.analysis_pipeline.track_a.register_capture \
+  --session "${SESSION_ID}" \
+  --rdc /absolute/path/to/frame.rdc \
+  --screenshot /absolute/path/to/frame.png
+# 11) Register the .foz from the same run window
+python3 -m scripts.analysis_pipeline.track_b.register_foz \
+  --session "${SESSION_ID}" \
+  --foz /absolute/path/to/steamapp_pipeline_cache.foz
+# 12) Mine the .foz
+python3 -m scripts.analysis_pipeline.track_b.mine_pipelines \
+  --session "${SESSION_ID}"
+# 13) Correlate later
+python3 -m scripts.analysis_pipeline.track_c.correlate_session \
+  --session "${SESSION_ID}" \
+  --run-legacy-extract
+
+Minimal usage flow:
+
+APPID=1282100
+SESSION_ID=remnant2__ward13_idle__20260405_120000
+SESSION_DIR="$PWD/analysis/games/remnant2/sessions/${SESSION_ID}"
+mkdir -p "$SESSION_DIR/notes"
+
+find ~/.steam/steam/steamapps/shadercache/${APPID} ~/.local/share/Steam/steamapps/shadercache/${APPID} \
+  -path '*/fozpipelinesv6/*.foz' -type f -printf '%TY-%Tm-%Td %TH:%TM:%TS %s %p\n' 2>/dev/null | sort \
+  > "${SESSION_DIR}/notes/foz_before.txt"
+
+qrenderdoc
+# Steam launch options:
+# ENABLE_VULKAN_RENDERDOC_CAPTURE=1 %command%
+# Launch game from Steam, go to scene, attach in RenderDoc to wine-preloader/wine64-preloader, capture, save frame.rdc + frame.png
+
+find ~/.steam/steam/steamapps/shadercache/${APPID} ~/.local/share/Steam/steamapps/shadercache/${APPID} \
+  -path '*/fozpipelinesv6/*.foz' -type f -printf '%TY-%Tm-%Td %TH:%TM:%TS %s %p\n' 2>/dev/null | sort \
+  > "${SESSION_DIR}/notes/foz_after.txt"
+
+diff -u "${SESSION_DIR}/notes/foz_before.txt" "${SESSION_DIR}/notes/foz_after.txt" \
+  > "${SESSION_DIR}/notes/foz_diff.txt" || true
+
+If RenderDoc capture does not work under your desktop/session, a known workaround reported recently is disabling Gamescope WSI for that launch:
+
+ENABLE_GAMESCOPE_WSI=0 ENABLE_VULKAN_RENDERDOC_CAPTURE=1 %command%
+
+That workaround has been reported for recent RenderDoc/Gamescope interactions.
