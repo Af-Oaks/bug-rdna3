@@ -1,48 +1,43 @@
-# Bibliotecas de Terceiros e Fontes Clonas
+# Big local data: sessions, foz caches, archives, shaderlab outputs
+data/
+
+# Prebuilt binaries (RGA tarball, GravityMark, etc.)
+tools/
+
+# Vendored source clones (mesa, Fossilize)
 lib/
-# Artefatos de Build e Instalações Isoladas (Mesa RADV, Fossilize, etc)
+
+# Build outputs and isolated installs (mesa, fossilize, venv)
 build/
 
-# Logs e Dumps UMR
-logs/
+# Reference PDFs
+pdf_context/
 
-# Artefatos Intermediários e Arquivos de Máquina (ISA)
+# Old untracked evidence kept inside the attic (game session data)
+_attic/analysis/games/
+
+# Armed-profile state lives in ~/.tcc, but ignore any local copy
+.tcc/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+
+# Compiled/intermediate artifacts
 *.spv
 *.asm
+*.o
+shaderlab/harness/tcc-dispatch
 
-# Arquivos Binários Baixados (ex: Vulkan SDK)
+# Downloaded archives
 *.tar.xz
 *.tar.gz
 *.zip
 
-# Diretórios de Sistema/OS e Arquivos Temporários
+# Editor/OS noise
 .DS_Store
 *.swp
 *~
-
-# Outros Ambientes (ex: Python)
-__pycache__/
-*.pyc
-venv/
-.env/
-
-radeon_gpu_analyzer/
-radeon_gpu_analyzer/*
-
-vulkansdk-linux-x86_64-*.tar.xz
-
-src/shaders/
-src/shaders/*
-pdf_context/*
-pdf_context/
-
-isa_dumps/
-isa_dumps/*
-
-gfxreconstruct/
-gfxreconstruct/*
-
-analysis/games
-analysis/games/*
-
-rdna3_pipeline_samples.json

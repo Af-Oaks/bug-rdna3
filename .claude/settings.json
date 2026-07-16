@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/methos/.local/share/vulkan/explicit_layer.d/**)",
+      "Read(//tmp/**)",
+      "Read(//home/methos/.local/share/Steam/steamapps/shadercache/1282100/fozpipelinesv6/**)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'Phase 0: restructure repo — legacy pipeline to _attic, full clean, new layout *)"
+    ]
+  }
+}
