@@ -1,0 +1,15 @@
+# FPS/frametime benchmark runs (bench.py, Phase 6) with MangoHud overlay +
+# CSV logging. Default (warm) shader cache to mirror what a player actually
+# experiences on repeated runs.
+
+[profile]
+name = "bench-mangohud"
+driver = "stock"
+radv_debug = []
+radv_perftest = []
+mangohud = true
+renderdoc = false
+sqtt = false
+shader_cache_dir = "default"
+
+[env]

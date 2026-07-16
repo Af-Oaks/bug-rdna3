@@ -1,0 +1,15 @@
+# Stock driver with VOPD (RDNA3 dual-issue) explicitly disabled via the
+# RADV_DEBUG=novopd flag. Used to isolate the VOPD-saturation hypothesis:
+# compare vopd_ratio / stall_ratio against plain "stock" on the same foz.
+
+[profile]
+name = "stock-novopd"
+driver = "stock"
+radv_debug = ["novopd"]
+radv_perftest = []
+mangohud = false
+renderdoc = false
+sqtt = false
+shader_cache_dir = "session"
+
+[env]

@@ -1,0 +1,44 @@
+# Remnant II -- manual-scene, installed, high-gain cohort. UE5 + vkd3d-proton.
+# Already has real evidence: a sample .foz exists at
+# data/foz/remnant2/steamapp_pipeline_cache.foz (moved from
+# src/shaders/remnant2/ during the Phase 0 restructure) and can validate the
+# stats pipeline (Phase 2) without a fresh capture.
+
+[game]
+slug = "remnant2"
+name = "Remnant II"
+kind = "steam"
+appid = 1282100
+runtime = "proton"
+api = "vkd3d"
+engine = "Unreal Engine 5"
+cohort = "high-gain"
+
+[benchmark]
+type = "manual-scene"
+trigger = "menu"
+launch_args = []
+duration_hint_s = 180
+instructions = """
+No builtin benchmark. Navigate to the scene documented in protocol_doc via
+normal gameplay and hold a stable camera/position for the capture window.
+Preserve any RADV_DEBUG or pipeline cache flags in the session notes.
+"""
+
+[foz]
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/steamapprun_pipeline_cache.*"
+
+[[scenes]]
+id = "ward13_idle"
+kind = "manual"
+protocol_doc = "docs/scenes/remnant2_ward13_idle.md"
+
+[[scenes]]
+id = "yaesha_open_area"
+kind = "manual"
+protocol_doc = "docs/scenes/remnant2_yaesha_open_area.md"
+
+[[scenes]]
+id = "combat_encounter_dense_effects"
+kind = "manual"
+protocol_doc = "docs/scenes/remnant2_combat_encounter_dense_effects.md"

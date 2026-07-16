@@ -1,0 +1,46 @@
+# Cyberpunk 2077 -- high-gain cohort candidate (large RDNA3 uplift observed
+# vs RDNA2-era expectations). REDengine 4, Proton + vkd3d-proton.
+
+[game]
+slug = "cyberpunk2077"
+name = "Cyberpunk 2077"
+kind = "steam"
+appid = 1091500
+runtime = "proton"
+api = "vkd3d"
+engine = "REDengine 4"
+cohort = "high-gain"
+
+[benchmark]
+type = "builtin"
+trigger = "menu"
+launch_args = []
+duration_hint_s = 120
+instructions = """
+Settings > Graphics > Benchmark. Keep the graphics preset label stable
+across repeated captures (e.g. "ultra_1440p_rt_off"). Preserve any RADV or
+Fossilize environment overrides in the session notes.
+"""
+
+[foz]
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/steamapprun_pipeline_cache.*"
+
+[[scenes]]
+id = "builtin_benchmark"
+kind = "benchmark"
+protocol_doc = "docs/scenes/cyberpunk2077_builtin_benchmark.md"
+
+[[scenes]]
+id = "night_city_street_walk"
+kind = "manual"
+protocol_doc = "docs/scenes/cyberpunk2077_night_city_street_walk.md"
+
+[[scenes]]
+id = "market_combat_entry"
+kind = "manual"
+protocol_doc = "docs/scenes/cyberpunk2077_market_combat_entry.md"
+
+[[scenes]]
+id = "dense_city_drive"
+kind = "manual"
+protocol_doc = "docs/scenes/cyberpunk2077_dense_city_drive.md"

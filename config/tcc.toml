@@ -1,0 +1,19 @@
+# Global tcc configuration. Relative paths are resolved against the repo
+# root (walked up from src/tcc/paths.py); ~ paths are expanded as-is.
+
+[paths]
+data_dir = "data"
+mesa_stock = "build/install"
+mesa_custom = "build/install_custom"
+tools_dir = "tools"
+steam_root = "~/.local/share/Steam"
+# MUST stay under $HOME: pressure-vessel (Steam's sandbox) mounts $HOME but
+# not /tmp, so an armed profile under /tmp would be invisible to the game.
+armed_profile = "~/.tcc/armed.json"
+wrapper = "bin/tcc-launch.sh"
+
+[defaults]
+gpu_arch = "gfx1101"
+replay_threads = 4
+replay_timeout_s = 30
+top_n_offenders = 25

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StatsTable",
+  "description": "Tidy pipeline-stats rows produced by tcc.stats (Phase 2). Parser is name-substring-tolerant; unmatched stat fields are kept under `extra`.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["pipeline_hash", "stage", "driver"],
+    "properties": {
+      "pipeline_hash": { "type": "string" },
+      "stage": { "type": "string" },
+      "driver": { "type": "string" },
+      "vgprs": { "type": ["integer", "null"] },
+      "sgprs": { "type": ["integer", "null"] },
+      "spills": { "type": ["integer", "null"] },
+      "code_size": { "type": ["integer", "null"] },
+      "lds": { "type": ["integer", "null"] },
+      "scratch": { "type": ["integer", "null"] },
+      "max_waves": { "type": ["integer", "null"] },
+      "extra": { "type": "object" }
+    }
+  }
+}

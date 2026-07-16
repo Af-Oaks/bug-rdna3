@@ -1,0 +1,15 @@
+# Custom ACO overlay build (build/install_custom). Currently byte-identical
+# to stock (custom_mesa_layer/ has no modifications yet) -- this is the
+# other half of the Phase 4 "zero deltas" sanity check.
+
+[profile]
+name = "custom"
+driver = "custom"
+radv_debug = []
+radv_perftest = []
+mangohud = false
+renderdoc = false
+sqtt = false
+shader_cache_dir = "session"
+
+[env]

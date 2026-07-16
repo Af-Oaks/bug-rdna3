@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArtifactRegistry",
+  "type": "object",
+  "required": ["schema_version", "session_id", "artifacts"],
+  "properties": {
+    "schema_version": { "type": "integer" },
+    "session_id": { "type": "string" },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "sha256", "kind", "producer", "timestamp", "confidence"],
+        "properties": {
+          "path": { "type": "string" },
+          "sha256": { "type": "string" },
+          "kind": { "type": "string" },
+          "producer": { "type": "string" },
+          "timestamp": { "type": "string" },
+          "confidence": {
+            "type": "string",
+            "enum": ["exact", "strong", "weak", "unresolved"]
+          },
+          "size_bytes": { "type": ["integer", "null"] }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+# Control -- manual-scene comparison title. Northlight engine, Proton +
+# vkd3d-proton (DX12 path).
+
+[game]
+slug = "control"
+name = "Control"
+kind = "steam"
+appid = 870780
+runtime = "proton"
+api = "vkd3d"
+engine = "Northlight"
+# TODO cohort: no gain data collected yet for this title; verify empirically
+# once a session exists (placeholder chosen as a low-gain comparison point
+# alongside sottr's "reference" anchor).
+cohort = "low-gain"
+
+[benchmark]
+type = "manual-scene"
+trigger = "menu"
+launch_args = []
+duration_hint_s = 180
+instructions = """
+No builtin benchmark. Navigate to the scene documented in protocol_doc via
+normal gameplay and hold a stable camera/position for the capture window.
+"""
+
+[foz]
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/steamapprun_pipeline_cache.*"
+
+[[scenes]]
+id = "central_executive_atrium"
+kind = "manual"
+# TODO: fill in exact camera anchor / trigger state once the scene is scouted.
+protocol_doc = "docs/scenes/control_central_executive_atrium.md"

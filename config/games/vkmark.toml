@@ -1,0 +1,30 @@
+# vkmark -- Tier-0 synthetic, fully automated native Vulkan benchmark.
+# appid intentionally omitted: native-cli, not a Steam title.
+
+[game]
+slug = "vkmark"
+name = "vkmark"
+kind = "native-cli"
+runtime = "native"
+api = "vulkan"
+engine = ""
+cohort = "synthetic"
+
+[benchmark]
+type = "cli"
+trigger = "cli-args"
+launch_args = []
+duration_hint_s = 60
+instructions = """
+Fully automated: `vkmark` runs its built-in scene suite and prints an FPS
+score on exit. No manual steps required. Requires the vkmark package
+(doctor flags it if missing).
+"""
+
+[foz]
+cache_glob = ""  # native-cli: no Steam shadercache
+
+[[scenes]]
+id = "default"
+kind = "benchmark"
+protocol_doc = "docs/scenes/vkmark_default.md"

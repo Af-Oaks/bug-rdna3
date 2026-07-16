@@ -1,0 +1,14 @@
+# SQTT (RGP-style thread trace) capture profile. RADV_THREAD_TRACE_TRIGGER
+# is computed by config.profile_env() as <session_dir>/sqtt.trigger.
+
+[profile]
+name = "capture-sqtt"
+driver = "stock"
+radv_debug = []
+radv_perftest = []
+mangohud = false
+renderdoc = false
+sqtt = true
+shader_cache_dir = "default"
+
+[env]

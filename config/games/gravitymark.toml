@@ -1,0 +1,33 @@
+# GravityMark -- Tier-0 synthetic (free Vulkan/OpenGL particle-physics
+# benchmark by Geeks3D). appid intentionally omitted: native-cli, ships as a
+# prebuilt Linux tarball, not a Steam title.
+
+[game]
+slug = "gravitymark"
+name = "GravityMark"
+kind = "native-cli"
+runtime = "native"
+api = "vulkan"
+engine = ""
+cohort = "synthetic"
+
+[benchmark]
+type = "cli"
+trigger = "cli-args"
+# TODO: confirm exact CLI flags once tools/gravitymark/ is downloaded and
+# `--help` is inspected; Geeks3D ships a benchmark_vk mode for headless runs.
+launch_args = []
+duration_hint_s = 90
+instructions = """
+Download the Linux tarball into tools/gravitymark/ (human step, see
+docs/SETUP.md once written). Run in benchmark mode via CLI flags; adapt
+launch_args after inspecting --help.
+"""
+
+[foz]
+cache_glob = ""  # native-cli: no Steam shadercache
+
+[[scenes]]
+id = "default"
+kind = "benchmark"
+protocol_doc = "docs/scenes/gravitymark_default.md"

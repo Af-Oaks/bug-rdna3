@@ -1,0 +1,31 @@
+# Shadow of the Tomb Raider -- reference cohort anchor. Feral's native
+# Linux port ships a real Vulkan renderer (no Proton/DXVK translation
+# layer), so it isolates RADV/ACO behavior from any translation-layer noise.
+
+[game]
+slug = "sottr"
+name = "Shadow of the Tomb Raider"
+kind = "steam"
+appid = 750920
+runtime = "native"
+api = "vulkan"
+engine = "Foundation"
+cohort = "reference"
+
+[benchmark]
+type = "builtin"
+trigger = "menu"
+launch_args = []
+duration_hint_s = 90
+instructions = """
+Main Menu > Benchmark. Keep the graphics preset label stable across
+repeated captures.
+"""
+
+[foz]
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/steamapprun_pipeline_cache.*"
+
+[[scenes]]
+id = "builtin_benchmark"
+kind = "benchmark"
+protocol_doc = "docs/scenes/sottr_builtin_benchmark.md"

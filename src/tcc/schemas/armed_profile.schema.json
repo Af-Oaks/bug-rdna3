@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ArmedProfile",
+  "description": "Canonical ~/.tcc/armed.json written by `tcc arm` and consumed by bin/tcc-launch.sh (Phase 3).",
+  "type": "object",
+  "required": [
+    "session_id",
+    "game",
+    "profile",
+    "appid",
+    "env",
+    "one_shot",
+    "expires_epoch",
+    "log_dir",
+    "mangohud",
+    "created_at"
+  ],
+  "properties": {
+    "session_id": { "type": "string" },
+    "game": { "type": "string" },
+    "profile": { "type": "string" },
+    "appid": { "type": ["integer", "null"] },
+    "env": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "one_shot": { "type": "boolean" },
+    "sticky": { "type": "boolean" },
+    "ttl_min": { "type": "integer" },
+    "expires_epoch": { "type": "integer" },
+    "log_dir": { "type": "string" },
+    "mangohud": { "type": "boolean" },
+    "created_at": { "type": "string" }
+  }
+}
