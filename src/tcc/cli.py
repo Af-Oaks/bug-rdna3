@@ -1,9 +1,11 @@
 """tcc command-line interface.
 
-Fully implemented in Phase 1: --version, doctor, session (new/list/show/note/close).
-Every other subcommand from plan §4 exists as a real parser (so --help and
-scripts written against the final surface both work) but its handler prints
-"not implemented yet" with the phase that will implement it.
+Fully implemented: --version, doctor, session (new/list/show/note/close)
+from Phase 1; foz (snapshot/delta/extract/import), stats (run/show), and
+mine from Phase 2. Every other subcommand from plan §4 exists as a real
+parser (so --help and scripts written against the final surface both work)
+but its handler prints "not implemented yet" with the phase that will
+implement it.
 """
 
 from __future__ import annotations
@@ -11,8 +13,14 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
-from . import __version__, session as session_mod, toolchain
+from . import __version__
+from . import foz as foz_mod
+from . import mine as mine_mod
+from . import session as session_mod
+from . import stats as stats_mod
+from . import toolchain
 
 
 def _not_implemented(command: str, phase: int) -> int:
@@ -125,6 +133,116 @@ def _add_session_parser(sub: argparse._SubParsersAction, common: argparse.Argume
     p.set_defaults(func=cmd_session_close)
 
 
+def cmd_foz_snapshot(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    for path in foz_mod.snapshot(session, session.game, args.label):
+        print(path)
+    return 0
+
+
+def cmd_foz_delta(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    counts = foz_mod.delta(session)
+    if args.json:
+        print(json.dumps(counts, indent=2))
+    else:
+        for name, count in counts.items():
+            print(f"{name}: {count} new hash(es)")
+    return 0
+
+
+def cmd_foz_extract(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    hashes = None
+    if args.hashes:
+        hashes = [line.strip() for line in Path(args.hashes).read_text().splitlines() if line.strip()]
+    print(foz_mod.extract(session, hashes=hashes))
+    return 0
+
+
+def cmd_foz_import(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    print(foz_mod.import_foz(session, args.game, Path(args.path)))
+    return 0
+
+
+def cmd_stats_run(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    foz_path = Path(args.foz) if args.foz else None
+    print(stats_mod.run(session, args.driver, foz_path=foz_path))
+    return 0
+
+
+def cmd_stats_show(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    df = stats_mod.load_session_stats(session, driver=args.driver)
+    if args.sort:
+        df = df.sort_values(args.sort, ascending=False)
+    if args.top:
+        df = df.head(args.top)
+    print(df.to_json(orient="records", indent=2) if args.json else df.to_string(index=False))
+    return 0
+
+
+def cmd_mine(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    top_df = mine_mod.rank(session, driver=args.driver, top=args.top, rank_by=args.rank)
+    print(top_df.to_json(orient="records", indent=2) if args.json else top_df.to_string(index=False))
+    return 0
+
+
+def _add_foz_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
+    p_foz = sub.add_parser("foz", parents=[common])
+    foz_sub = p_foz.add_subparsers(dest="foz_action", required=True)
+
+    p = foz_sub.add_parser("snapshot", parents=[common])
+    p.add_argument("--session", required=True)
+    p.add_argument("--label", choices=["before", "after"], required=True)
+    p.set_defaults(func=cmd_foz_snapshot)
+
+    p = foz_sub.add_parser("delta", parents=[common])
+    p.add_argument("--session", required=True)
+    p.set_defaults(func=cmd_foz_delta)
+
+    p = foz_sub.add_parser("extract", parents=[common])
+    p.add_argument("--session", required=True)
+    p.add_argument("--hashes", default=None, help="text file, one pipeline hash per line")
+    p.set_defaults(func=cmd_foz_extract)
+
+    p = foz_sub.add_parser("import", parents=[common])
+    p.add_argument("--session", default="@last")
+    p.add_argument("--game", required=True)
+    p.add_argument("path")
+    p.set_defaults(func=cmd_foz_import)
+
+
+def _add_stats_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
+    p_stats = sub.add_parser("stats", parents=[common])
+    stats_sub = p_stats.add_subparsers(dest="stats_action", required=True)
+
+    p = stats_sub.add_parser("run", parents=[common])
+    p.add_argument("--session", required=True)
+    p.add_argument("--driver", choices=["system", "stock", "custom"], required=True)
+    p.add_argument("--foz", default=None)
+    p.set_defaults(func=cmd_stats_run)
+
+    p = stats_sub.add_parser("show", parents=[common])
+    p.add_argument("--session", required=True)
+    p.add_argument("--driver", default=None)
+    p.add_argument("--sort", default=None)
+    p.add_argument("--top", type=int, default=None)
+    p.set_defaults(func=cmd_stats_show)
+
+
+def _add_mine_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
+    p_mine = sub.add_parser("mine", parents=[common])
+    p_mine.add_argument("--session", required=True)
+    p_mine.add_argument("--driver", default=None)
+    p_mine.add_argument("--top", type=int, default=25)
+    p_mine.add_argument("--rank", choices=["waves", "vgprs", "spill", "code_size", "score"], default="score")
+    p_mine.set_defaults(func=cmd_mine)
+
+
 def _add_stub_commands(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
     """Parsers for every subcommand in plan §4 that isn't implemented yet.
     Each prints "not implemented yet (Phase N)" and exits 2."""
@@ -149,46 +267,6 @@ def _add_stub_commands(sub: argparse._SubParsersAction, common: argparse.Argumen
     p_launch.add_argument("--wait", action="store_true")
     p_launch.add_argument("--args", default=None)
     p_launch.set_defaults(func=stub("launch", 3))
-
-    # foz -- Phase 2 (foz.py) -----------------------------------------------
-    p_foz = sub.add_parser("foz", parents=[common])
-    foz_sub = p_foz.add_subparsers(dest="foz_action", required=True)
-    p = foz_sub.add_parser("snapshot", parents=[common])
-    p.add_argument("--session", required=True)
-    p.add_argument("--label", choices=["before", "after"], required=True)
-    p.set_defaults(func=stub("foz snapshot", 2))
-    p = foz_sub.add_parser("delta", parents=[common])
-    p.add_argument("--session", required=True)
-    p.set_defaults(func=stub("foz delta", 2))
-    p = foz_sub.add_parser("extract", parents=[common])
-    p.add_argument("--session", required=True)
-    p.add_argument("--hashes", default=None)
-    p.set_defaults(func=stub("foz extract", 2))
-    p = foz_sub.add_parser("import", parents=[common])
-    p.add_argument("--game", required=True)
-    p.add_argument("path")
-    p.set_defaults(func=stub("foz import", 2))
-
-    # stats -- Phase 2 (stats.py) -----------------------------------------
-    p_stats = sub.add_parser("stats", parents=[common])
-    stats_sub = p_stats.add_subparsers(dest="stats_action", required=True)
-    p = stats_sub.add_parser("run", parents=[common])
-    p.add_argument("--session", required=True)
-    p.add_argument("--driver", choices=["system", "stock", "custom"], required=True)
-    p.add_argument("--foz", default=None)
-    p.set_defaults(func=stub("stats run", 2))
-    p = stats_sub.add_parser("show", parents=[common])
-    p.add_argument("--sort", default=None)
-    p.add_argument("--top", type=int, default=None)
-    p.set_defaults(func=stub("stats show", 2))
-
-    # mine -- Phase 2 (mine.py) --------------------------------------------
-    p_mine = sub.add_parser("mine", parents=[common])
-    p_mine.add_argument("--session", required=True)
-    p_mine.add_argument("--driver", default=None)
-    p_mine.add_argument("--top", type=int, default=25)
-    p_mine.add_argument("--rank", choices=["waves", "vgprs", "spill", "code_size", "score"], default="score")
-    p_mine.set_defaults(func=stub("mine", 2))
 
     # isa -- Phase 4 (isa.py, hazards port) ---------------------------------
     p_isa = sub.add_parser("isa", parents=[common])
@@ -306,6 +384,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_doctor.set_defaults(func=cmd_doctor)
 
     _add_session_parser(sub, common)
+    _add_foz_parser(sub, common)
+    _add_stats_parser(sub, common)
+    _add_mine_parser(sub, common)
     _add_stub_commands(sub, common)
     return parser
 
@@ -316,7 +397,11 @@ def main(argv: list[str] | None = None) -> int:
     if not hasattr(args, "func"):
         parser.print_help()
         return 2
-    return args.func(args)
+    try:
+        return args.func(args)
+    except (foz_mod.FozError, stats_mod.StatsError, session_mod.SessionError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
