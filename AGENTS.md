@@ -1,48 +1,79 @@
 # Project Context
 
-This repository is a thesis workspace for investigating why RDNA3 shows very different gains across games and workloads relative to RDNA2-era expectations, with emphasis on Linux, Proton, Vulkan, RADV, and ACO behavior.
-The goal of this project is to investigate, isolate, and work around potential physical bugs and design limitations in the RDNA3 architecture (specifically the AMD Radeon RX 7800 XT GPU - Navi 32 matrix, ISA GFX1101) running in a Linux environment. The central focus is on the discrepancy between theoretical (TFLOPS) and actual throughput, suspected to be caused by hardware scheduling and instruction issuing failures.
+This repository is a thesis (TCC) workspace investigating why AMD RDNA3 shows very different
+gen-over-gen gains across games and workloads relative to RDNA2-era expectations.
+Hardware target: AMD Radeon RX 7800 XT — Navi 32 — **ISA target `gfx1101`**
+(NOT gfx1100; that is Navi 31). Stack: Ubuntu 24.04 + Steam/Proton + Vulkan + Mesa RADV/ACO,
+with two local Mesa builds: stock (`build/install`) and custom ACO (`build/install_custom`,
+built from the `custom_mesa_layer/` overlay — currently unmodified, so both compilers are
+byte-identical until the first real ACO experiment lands).
 
-Microarchitectural Hypotheses to be Tested:
+Microarchitectural hypotheses under investigation (as measurable correlations, not verdicts):
 
-The s_delay_alu Danger: The RDNA3 hardware scheduler appears unable to efficiently track data dependencies in the new dual-issue pipeline, forcing compilers (Mesa ACO and AMD LLVM) to aggressively insert software stall cycles (s_delay_alu). We want to modify the compiler to remove these protections and observe wave hangs and corruptions.
+- **s_delay_alu cost**: RDNA3 moved data-hazard handling from hardware interlocks to
+  compiler-inserted `s_delay_alu`; measure its density and theoretical stall impact.
+- **VOPD (dual-issue) underuse**: `v_dual_*` requires near-perfect operand/bank conditions;
+  measure how often ACO actually emits it and what forcing it on/off changes.
+- **VGPR pressure / occupancy**: register pressure vs waves-per-SIMD limits.
 
-VOPD (Dual-Issue) Weakness: The ability to execute two VALU instructions simultaneously (Wave32) requires near-perfect conditions (absence of VGPR bank conflicts). We want to force compilation with and without VOPD to measure the actual penalty.
+## Framing (unchanged, important)
 
-Memory Violations (MEMVIOL): Handling OOB (Out-of-Bounds) accesses in GFX11 causes severe segmentation faults (VM Faults) that require a GPU reset (amdgpu.gpu_recovery=1).
+- Do NOT frame the project as proving an architectural flaw.
+- Correct framing: investigate which workload, pipeline, shader, compiler, and runtime
+  characteristics correlate with high gains versus low gains on RDNA3.
+- The workflow must support side-by-side comparison of high-gain and low-gain titles and
+  baseline vs modified ACO.
 
+## Current Structure (post-rework, branch `rework`)
 
-## Framing
-
-- Do not frame the project as proving an architectural flaw.
-- The correct framing is: investigate which workload, pipeline, shader, compiler, and runtime characteristics correlate with high gains versus low gains on RDNA3.
-- The workflow must support side-by-side comparison of high-gain and low-gain titles.
-
-## Current Structure
-
-- `analysis/` is the thesis-facing workflow area.
-- `analysis/games/<game>/sessions/<session_id>/` is the canonical location for all per-scene evidence.
-- `scripts/analysis_pipeline/` contains the Track A / Track B / Track C orchestration scripts.
-- `custom_mesa_layer/`, `scripts/build_custom_aco.sh`, `scripts/test_fossilize.sh`, `src/`, and related assets remain relevant for compiler experiments and should not be treated as obsolete.
+- `src/tcc/` — the single Python package; CLI entry point `tcc` (installed in `build/venv`,
+  run as `./build/venv/bin/tcc`). Everything flows through it.
+- `config/` — tracked TOML configs: `tcc.toml` (global), `games/*.toml` (the game matrix),
+  `profiles/*.toml` (experiment variants: driver ICD, RADV flags, capture layers, mangohud).
+- `bin/tcc-launch.sh` — Steam `%command%` wrapper (Phase 3; reads `~/.tcc/armed.env`).
+- `shaderlab/` — authored GLSL experiments + C++ Vulkan dispatch harness (Phase 5).
+- `data/` — gitignored: sessions, foz caches, shaderlab outputs, archived legacy dumps.
+- `custom_mesa_layer/` + `scripts/{setup_env,build_custom_aco}.sh` — the ACO experiment area.
+- `docs/` — PLAN.md (approved rework plan), THESIS_NOTES.md, later SETUP/WORKFLOWS/GAMES.
+- `_attic/` — frozen legacy code (old Track A/B/C pipeline, prototypes). Reference only;
+  never import from it at runtime.
+- **`TODO.md` at the repo root is the live status tracker — read it first in any new session.**
 
 ## Workflow Rules
 
-- Track A is RenderDoc-first for real frame capture.
-- Track B is `.foz` mining for pipeline and shader objects from the same scene/session context as Track A.
-- Track C correlates Track A, Track B, and optional ISA / RGA / profiling / compiler artifacts.
-- Every artifact must remain traceable through `session_id`, checksums, provenance, and manifest files.
-- Prefer local repo-managed tools first, vendored tools second, and system tools only when necessary.
-- Be explicit about uncertainty. If a match is only heuristic, label it `weak` or `unresolved`.
+- Everything is session-scoped: `tcc session new --game X --scene Y` → all artifacts land in
+  `data/sessions/<game>/<session_id>/` with manifests, sha256 provenance, and step records.
+- Launch experiments via the armed-profile pattern: `tcc arm --profile <name>` then launch;
+  never edit Steam launch options per-experiment (they are set once to the wrapper).
+- Mining is stats-first: `fossilize-replay --enable-pipeline-stats` gives per-stage
+  VGPRs/SGPRs/spills/code-size/waves **plus ACO extras (VOPD, VALU/SALU/VMEM/SMEM counts,
+  Latency, Pre-Sched pressure)** keyed by exact pipeline hash. Parse ISA text only for
+  ranked top-N offenders via `fossilize-disasm --target isa`.
+- Scene scoping via foz delta: snapshot cache before/after, delta the hash sets,
+  `fossilize-prune` a scene-scoped sub-database. Remember: foz records pipeline *creation*,
+  not draws — RenderDoc frames are the on-screen ground truth.
+- A/B comparisons (stock vs custom ACO) must always run with `RADV_DEBUG=nocache` and an
+  isolated `MESA_SHADER_CACHE_DIR` (enforced centrally in `tcc.config.profile_env`).
+- Be explicit about uncertainty; heuristic linkage must be labeled, never implied as exact.
 
-## Non-Goals
+## Non-Goals / Hard Lessons
 
-- Do not make `gfxreconstruct` the primary workflow.
-- Do not claim `.foz` can reconstruct full scene state.
-- Do not pretend exact pipeline matching exists without evidence.
-- Do not add cloud services or external databases.
+- Do NOT reintroduce GFXReconstruct or hand-inject native Vulkan layers into Proton
+  (32-bit pre-loader ELF panics, VKD3D allocator collisions, Pressure Vessel path blocks).
+  Use `ENABLE_VULKAN_RENDERDOC_CAPTURE=1` — Valve ships container-paired layers.
+- Do NOT parse multi-GB `RADV_DEBUG=shaders` dumps again; the driver reports the stats.
+- Do NOT claim `.foz` reconstructs scene state or that a mined pipeline was drawn in a frame
+  without RenderDoc/manual evidence.
+- Do NOT glob `*.foz` for Steam caches — the files have no extension
+  (`steamapps/shadercache/<appid>/fozpipelinesv6/steamapprun_pipeline_cache.<hex>`).
+- Do NOT put automation state in `/tmp` for Proton games — Pressure Vessel only reliably
+  shares `$HOME` (armed profile lives in `~/.tcc/`).
+- Do NOT add cloud services or external databases.
 
-## Existing Useful Assets
+## Useful Assets
 
-- `extract.py` is a legacy helper for mining shader-related signals from compiler/ISA logs. Wrap it when useful; do not make it the core pipeline.
-- `src/shaders/remnant2/steamapp_pipeline_cache.foz` and `src/test_vopd/test_vopd.foz` are useful local examples for validating Fossilize-based mining.
-- `radeon_gpu_analyzer/` and `build/install/bin/fossilize-*` are local tool sources for optional integration.
+- `data/foz/remnant2/steamapp_pipeline_cache.foz` — 129MB real Remnant II cache; validated:
+  17,730 stat rows extracted under the stock local Mesa build.
+- `data/archive/` — legacy 2.1GB ISA dump + 280MB extracted samples (historical only).
+- Fossilize CLIs in `build/install/bin/`; RGA arrives as a prebuilt tarball in `tools/rga/`.
+- RDNA2/RDNA3 ISA reference PDFs in `pdf_context/`.

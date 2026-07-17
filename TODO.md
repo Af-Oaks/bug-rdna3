@@ -68,6 +68,57 @@ does not even need ISA parsing. The tidy parser keeps unknown stats in the `extr
 - [ ] Install games: Cyberpunk 2077, Shadow of the Tomb Raider, Black Myth: Wukong **Benchmark Tool (appid 3132990)**, FFXV Windows Benchmark (non-Steam), Control
 - [ ] Confirm `_attic/` contents can eventually be deleted once tcc reaches parity (no rush)
 
+## New direction (what this refactor changes)
+
+The rework is not just a cleanup — it changes the method:
+
+1. **Framing**: from "prove RDNA3 has a hardware flaw" → "measure which workload/pipeline/compiler
+   characteristics correlate with high vs low gen-over-gen gains". Hypotheses (s_delay_alu hazard
+   offloading, VOPD underuse, VGPR/occupancy pressure) become measurable correlations.
+2. **Stats-first instead of log-parsing**: the old path was a 2.1GB `RADV_DEBUG=shaders` dump parsed
+   by regex. The new path asks the driver directly — `fossilize-replay --enable-pipeline-stats`
+   (VK_KHR_pipeline_executable_properties) yields per-stage VGPRs/waves/**VOPD/VALU/SALU/latency**
+   keyed by exact pipeline hash. ISA text is extracted only for top-N offenders via
+   `fossilize-disasm --target isa --filter-*`. Kilobytes instead of gigabytes.
+3. **Armed-profile launches instead of editing Steam by hand**: Steam launch options get set ONCE
+   per game to `bin/tcc-launch.sh %command%`; every experiment after that is `tcc arm --profile X`
+   → launch. Profiles swap driver ICD (stock/custom ACO), RADV flags, capture layers, mangohud.
+4. **Benchmark-first game matrix**: Tier 0 synthetics (vkmark/vkpeak/GravityMark — fully scriptable,
+   no gameplay), Tier 1 built-in benchmarks (Cyberpunk, SOTTR, Wukong bench tool, FFXV bench),
+   Tier 2 manual scenes (Remnant II, Control) only where no benchmark exists.
+5. **Shaderlab for causality**: real games show correlations; the C++ dispatch harness + authored
+   GLSL experiments isolate single variables (VOPD on/off, dependency chains) for cause-and-effect.
+6. **One CLI (`tcc`), one session model**: every artifact traceable by session id + sha256, replacing
+   three loosely-coupled track scripts. Old Track C hash-token correlation is obsolete — the stats
+   flow is exact-hash end-to-end.
+
+## Gotchas / lessons learned (do not repeat these)
+
+- **Never inject native Linux Vulkan layers into Proton by hand.** The GFXReconstruct saga failed on
+  three stacked walls: Steam's 32-bit pre-loader can't load a 64-bit layer (ELF panic), VKD3D-Proton's
+  allocator collides with page-fault memory tracking, and Pressure Vessel blocks unmounted paths.
+  The final "fix" even pointed at a LunarG SDK dir that was never extracted. Use Valve-integrated
+  paths instead: `ENABLE_VULKAN_RENDERDOC_CAPTURE=1` (Steam ships correctly-paired layers in-container).
+- **gfx1100 ≠ gfx1101.** The 7800 XT (Navi 32) is **gfx1101**; gfx1100 is Navi 31 (7900 XT/XTX).
+  Early notes/RGA targets used gfx1100 — any occupancy numbers from that target are for the wrong chip.
+- **Check that a tool is actually built before planning around it.** 1.5GB of RGA source sat unbuilt
+  for months; the `rga` "binary" was a 1.3KB bash wrapper and amdllpc a git-lfs pointer stub.
+  Prefer AMD's prebuilt release tarballs.
+- **Don't parse what the driver will tell you.** The 2GB log + OOM + streaming-parser saga was
+  unnecessary: `--enable-pipeline-stats` existed all along, and ACO even reports VOPD counts per stage.
+- **Fossilize records at pipeline *creation*, not draw time.** UE5 precreates PSOs at load screens,
+  so a foz before/after delta means "created during the window", NOT "drawn in the scene". The
+  RenderDoc frame capture is the ground truth for what was actually on screen; keep both.
+- **Steam foz files have no `.foz` extension** (`steamapprun_pipeline_cache.<hex>`) — never glob `*.foz`.
+- **Steam launch options have no API.** The one-time `%command%` wrapper + `~/.tcc/armed.env` file is
+  the only sane automation path. The armed file must live under `$HOME` — Pressure Vessel does not
+  reliably share `/tmp`. The wrapper must NEVER break a launch (every failure → `exec "$@"`).
+- **Verify appids, don't trust memory**: the Wukong *Benchmark Tool* is 3132990; 2358720 is the base game.
+- **The custom ACO is still stock.** `custom_mesa_layer/` has zero modifications, so
+  stock-vs-custom must diff to zero — that's the Phase 4 sanity check, not a disappointment.
+- **The git repo was never the bloat problem** — 20MB of history vs ~7GB of untracked working-tree
+  junk. Cleanup = disk hygiene, not git surgery.
+
 ## Standing facts (verified, do not re-derive)
 
 - GPU: RX 7800 XT = Navi 32 = **gfx1101** (old docs saying gfx1100 are wrong).
