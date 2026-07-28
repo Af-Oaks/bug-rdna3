@@ -1,0 +1,47 @@
+# Metro Exodus Enhanced Edition -- 4A Engine, mandatory hardware RT,
+# Proton + vkd3d-proton (DX12 path). appid 1449560 verified from the local
+# install (SataSSD library, 2026-07-23; still downloading at config time).
+#
+# The benchmark is NOT in the game menu: the install dir ships a standalone
+# Benchmark.exe (GUI: pick preset + run count, click Run) which relaunches
+# MetroExodus.exe with benchmark args. Under Proton, launch it via the
+# armed-profile exe-override: `tcc arm ... --exe-override Benchmark.exe`
+# (the wrapper substitutes it for MetroExodus.exe in %command%).
+
+[game]
+slug = "metro-ee"
+name = "Metro Exodus Enhanced Edition"
+kind = "steam"
+appid = 1449560
+runtime = "proton"
+api = "vkd3d"
+engine = "4A Engine"
+# TODO cohort: placeholder until the first A/B session exists. Mandatory RT
+# is where RDNA3 moved most vs RDNA2, hence the high-gain guess -- verify.
+cohort = "high-gain"
+
+[benchmark]
+type = "standalone"
+trigger = "menu"
+launch_args = []
+duration_hint_s = 240
+instructions = """
+Verified 2026-07-23: Benchmark.exe sits at the install root next to
+MetroExodus.exe. One command does everything:
+  tcc bench run --game metro-ee --profile bench-mangohud \
+    --exe-override "/media/methos/SataSSD/SteamGames/steamapps/common/Metro Exodus Enhanced Edition/Benchmark.exe"
+(the wrapper substitutes it for MetroExodus.exe; exe-match resolves
+automatically). In the GUI pick a preset, keep the label stable across
+captures (e.g. "extreme_1440p"), set run count, hit Run. MangoHud logging
+autostarts with the game process -- no hotkey needed. Note: Steam may
+download its community pre-cache mid-session; use the "run_created" side
+of the foz delta, never "new", for what this run compiled.
+"""
+
+[foz]
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/**/*pipeline_cache*"
+
+[[scenes]]
+id = "builtin_benchmark"
+kind = "benchmark"
+protocol_doc = "docs/scenes/metro-ee_builtin_benchmark.md"

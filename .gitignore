@@ -1,3 +1,7 @@
+#AI
+.claude/
+.claude/*
+_attic/
 # Big local data: sessions, foz caches, archives, shaderlab outputs
 data/
 
@@ -9,12 +13,10 @@ lib/
 
 # Build outputs and isolated installs (mesa, fossilize, venv)
 build/
+bin/
 
 # Reference PDFs
 pdf_context/
-
-# Old untracked evidence kept inside the attic (game session data)
-_attic/analysis/games/
 
 # Armed-profile state lives in ~/.tcc, but ignore any local copy
 .tcc/
@@ -30,7 +32,10 @@ venv/
 *.spv
 *.asm
 *.o
-shaderlab/harness/tcc-dispatch
+shaderlab/harness/tcc-shaderbench
+
+# Stray Fossilize databases outside data/ (scratch conversions, decompression tests)
+/*.foz
 
 # Downloaded archives
 *.tar.xz

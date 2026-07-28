@@ -3,6 +3,18 @@
 Work paused mid-rework on 2026-07-16. Branch: **`rework`**. The full approved plan is in
 [docs/PLAN.md](docs/PLAN.md) — read it before resuming. This file tracks what is DONE vs LEFT.
 
+**Live context:** [ONGOING.md](ONGOING.md) — read that first; it holds the current position,
+the next command, and what result is expected.
+
+**Measurement core:** the two-metric loop (static compiler efficiency + runtime FPS, and the
+calibration bridge between them) is specified in detail in
+[docs/METRICS_PLAN.md](docs/METRICS_PLAN.md) — it expands Phase 4 (`compare.py`) and Phase 6
+(`bench.py`). Metric 2 is built and validated on Metro EE; Metric 1 needs `compare.py`.
+
+**Metric 3 (new, 2026-07-28):** [docs/SHADERBENCH_PLAN.md](docs/SHADERBENCH_PLAN.md) — execute
+the shaders extracted from a game's `.foz` as a deterministic, game-free GPU workload, and keep
+a ledger of (workload × compiler revision). Feasibility verified; SB-0 spike is the gate.
+
 ## Where things stand
 
 | Phase | Status | Evidence |
@@ -10,10 +22,10 @@ Work paused mid-rework on 2026-07-16. Branch: **`rework`**. The full approved pl
 | 0 — Restructure | ✅ committed `d609d60` | old pipeline in `_attic/`, gfxreconstruct + RGA source deleted (2.4GB freed), data blobs in `data/archive/` |
 | 1 — Core package | ✅ committed `acbfa86` | `pip install -e .` works; `tcc doctor`, `tcc session new/list/show/note/close` verified |
 | 2 — Foz + stats engine | 🟡 **WIP, committed as WIP** | `foz.py`/`stats.py`/`mine.py` written; real GPU stats run SUCCEEDED (see below); agent was interrupted mid-"re-run with fix" |
-| 3 — Arm/launch wrapper | ❌ not started | |
+| 3 — Arm/launch wrapper | ✅ done 2026-07-23 | `arm.py`/`steam.py`/`bin/tcc-launch.sh`; vkcube acceptance passed (stock ICD `Mesa 26.1.0-devel` applied + one-shot consumed; unarmed/stale/wrong-appid all launch untouched; exe-override substitution verified) |
 | 4 — ISA/compare/RGA | ❌ not started | |
 | 5 — Shaderlab + C++ harness | ❌ not started | |
-| 6 — Bench + capture | ❌ not started | |
+| 6 — Bench + capture | 🟡 bench slice done 2026-07-23 | `bench.py`: `tcc bench run` orchestrator (session→foz before→arm→launch→wait→foz after/delta→CSV summary) + `tcc bench summarize` (MangoHud parser validated on synthetic data). renderdoc_ctl.py still pending; mangohud still not installed |
 | 7 — Reports + docs rewrite | ❌ not started | `docs/THESIS_NOTES.md` exists; README/AGENTS still describe the OLD layout |
 
 ## Key result already in hand (Phase 2 partial)
@@ -43,10 +55,10 @@ does not even need ISA parsing. The tidy parser keeps unknown stats in the `extr
    - `tcc foz snapshot/delta/extract` end-to-end still untested (needs a real game run or a
      synthetic before/after pair).
    - Commit as "Phase 2: foz + stats engine".
-3. **Phase 3** (plan §4/§5): `arm.py`, `steam.py`, `bin/tcc-launch.sh`. Acceptance via vkcube
-   (`tcc arm --profile custom && bin/tcc-launch.sh vkcube` must show the custom ICD + one-shot
-   consumed; stale/absent profile must launch untouched). Then **[HUMAN]** set Steam launch
-   options once per game: `<repo>/bin/tcc-launch.sh %command%`.
+3. ~~**Phase 3**~~ DONE 2026-07-23 (see table above). Remaining human step: set Steam launch
+   options once per game: `<repo>/bin/tcc-launch.sh %command%`. First real-game run should be
+   **Control** (installed + real foz cache verified):
+   `tcc bench run --game control --profile bench-mangohud` (after mangohud is installed).
 4. **Phase 4**: `isa.py` (port stall_ratio/vopd_ratio from `_attic/prototypes/triage.py`),
    `hazards.py` port, `compare.py`, `rga.py`, `tcc mesa build`. Sanity check: stock-vs-custom
    compare must show ZERO deltas (custom ACO layer is still unmodified).
@@ -57,16 +69,46 @@ does not even need ISA parsing. The tidy parser keeps unknown stats in the `extr
 7. **Phase 7**: `report.py`, rewrite README.md/AGENTS.md for the new layout, write
    docs/SETUP.md, docs/WORKFLOWS.md, docs/GAMES.md.
 
-## Human-only tasks (can be done anytime, unblock Phases 3/6)
+## Human-only tasks (can be done anytime, unblock Phase 6)
 
-- [ ] `sudo apt install mangohud renderdoc vkmark` (check whether Ubuntu's renderdoc ships the
+- [x] mangohud — installed 2026-07-23; full capture chain verified (vkcube through the wrapper:
+      stock ICD + autostart MangoHud CSV + `tcc bench summarize`, 1503 frames parsed clean).
+      NOTE: the "driver" column in MangoHud CSV metadata is the system **OpenGL** driver
+      (a local Mesa 25.3.0-devel GL stack), NOT the Vulkan ICD in use — the ICD of record is
+      in the session launch log / env snapshot.
+- [ ] `sudo apt install renderdoc vkmark` (check whether Ubuntu's renderdoc ships the
       python module; if not, get the tarball from renderdoc.org)
+- [ ] **Steam launch options, once per game** (Properties → Launch Options):
+      `/home/methos/Documents/faculdade/TCC_bug_amd/bin/tcc-launch.sh %command%`
+      → set for: control, cs2, re-requiem, remnant2 (+ metro-ee / marvelrivals when downloaded)
+- [ ] **CS2**: subscribe to workshop map **3240880604** ("CS2 FPS BENCHMARK DUST2") once
+- [ ] **Metro EE** (after download finishes): find `Benchmark.exe` in the install dir, record the
+      path in `config/games/metro-ee.toml` instructions; launch it via
+      `tcc arm ... --exe-override <path>/Benchmark.exe` (wrapper substitutes it for MetroExodus.exe)
 - [ ] Download AMD prebuilt **RGA** Linux tarball → unpack to `tools/rga/` (record version in docs/SETUP.md)
 - [ ] Download **GravityMark** → `tools/gravitymark/`; fill `launch_args` in `config/games/gravitymark.toml`
-- [ ] Steam launch options (once per game): `/home/methos/Documents/faculdade/TCC_bug_amd/bin/tcc-launch.sh %command%` (after Phase 3 exists)
 - [ ] **Clear the old broken GFXRECON launch options from Remnant II properties** (if still set)
-- [ ] Install games: Cyberpunk 2077, Shadow of the Tomb Raider, Black Myth: Wukong **Benchmark Tool (appid 3132990)**, FFXV Windows Benchmark (non-Steam), Control
+- [ ] Finish downloads: Metro Exodus EE (1449560), Marvel Rivals (2767030); wukong **Benchmark Tool
+      (appid 3132990)** not installed yet (base game 2358720 is)
 - [ ] Confirm `_attic/` contents can eventually be deleted once tcc reaches parity (no rush)
+
+## Game matrix status (2026-07-23, verified from local appmanifests)
+
+| slug | appid | state | benchmark path |
+|---|---|---|---|
+| control | 870780 | ✅ installed (SataSSD) | manual scene; foz snapshot already tested against its real 12MB cache |
+| cs2 | 730 | ✅ installed (China Democracy1) | workshop map 3240880604, prints avg/1% lows to console |
+| re-requiem | 3764200 | ✅ installed (SataSSD) | NO builtin bench → manual scenes (leon_intro / first_street) |
+| metro-ee | 1449560 | ⏳ downloading (4%) | standalone Benchmark.exe via wrapper exe-override |
+| marvelrivals | 2767030 | ⏳ downloading (1%) | NO builtin bench → practice range only (anti-cheat: never capture online) |
+| remnant2 | 1282100 | ✅ installed (main lib) | manual scenes; legacy foz layout (hex dir) handled |
+
+**Shadercache gotchas discovered:** caches live in the game's OWN library folder (not
+`~/.local/share/Steam`) — `steam.library_folders()` parses libraryfolders.vdf and
+`foz.snapshot` now searches all of them. New Steam layout is
+`fozpipelinesv6/steam_pipeline_cache.foz` (WITH extension, contradicting the old gotcha);
+legacy is `steamapprun_pipeline_cache.<hex>/steamapp_pipeline_cache.foz`. The game TOML glob
+`**/*pipeline_cache*` (files only) matches both and deliberately excludes `replay_cache.*`.
 
 ## New direction (what this refactor changes)
 

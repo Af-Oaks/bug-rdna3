@@ -25,7 +25,7 @@ normal gameplay and hold a stable camera/position for the capture window.
 """
 
 [foz]
-cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/steamapprun_pipeline_cache.*"
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/**/*pipeline_cache*"
 
 [[scenes]]
 id = "central_executive_atrium"

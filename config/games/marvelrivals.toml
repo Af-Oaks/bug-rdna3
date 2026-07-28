@@ -1,0 +1,41 @@
+# Marvel Rivals -- UE5, Proton + vkd3d-proton (DX12 path). appid 2767030
+# verified from the local install (SataSSD library, 2026-07-23; still
+# downloading at config time).
+#
+# NO built-in benchmark (verified 2026-07-23). This is a live-service PvP
+# title with anti-cheat: capture ONLY in the offline Practice Range /
+# vs-AI modes, never in online matches -- both to keep the scene
+# repeatable and to avoid waving a custom driver stack at the anti-cheat.
+
+[game]
+slug = "marvelrivals"
+name = "Marvel Rivals"
+kind = "steam"
+appid = 2767030
+runtime = "proton"
+api = "vkd3d"
+engine = "Unreal Engine 5"
+# TODO cohort: placeholder until the first A/B session exists. High-fps
+# esports-tuned UE5 (no Lumen/Nanite default path) -- gains may be modest.
+cohort = "low-gain"
+
+[benchmark]
+type = "manual-scene"
+trigger = "menu"
+launch_args = []
+duration_hint_s = 180
+instructions = """
+No builtin benchmark. Enter the Practice Range, follow the fixed
+camera/movement path in protocol_doc, toggle MangoHud logging
+(Shift_L+F2) at path start and end. Stay OUT of online modes while a tcc
+profile is armed (custom ICD + anti-cheat is an unnecessary risk, and
+matches are not repeatable anyway).
+"""
+
+[foz]
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/**/*pipeline_cache*"
+
+[[scenes]]
+id = "practice_range"
+kind = "manual"
+protocol_doc = "docs/scenes/marvelrivals_practice_range.md"

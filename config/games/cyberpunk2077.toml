@@ -23,7 +23,7 @@ Fossilize environment overrides in the session notes.
 """
 
 [foz]
-cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/steamapprun_pipeline_cache.*"
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/**/*pipeline_cache*"
 
 [[scenes]]
 id = "builtin_benchmark"

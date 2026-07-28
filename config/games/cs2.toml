@@ -1,0 +1,43 @@
+# Counter-Strike 2 -- Source 2, NATIVE Linux Vulkan (no Proton). appid 730
+# verified from the local install ("China Democracy1" library, 2026-07-23).
+#
+# Benchmark = community workshop map "CS2 FPS BENCHMARK DUST2"
+# (https://steamcommunity.com/workshop/filedetails/?id=3240880604), which
+# simulates a round (plants, nades, smokes) and prints avg FPS + 1% lows to
+# the console. One-time human step: subscribe to the map in the workshop.
+
+[game]
+slug = "cs2"
+name = "Counter-Strike 2"
+kind = "steam"
+appid = 730
+runtime = "native"
+api = "vulkan"
+engine = "Source 2"
+# TODO cohort: placeholder until the first A/B session exists.
+cohort = "low-gain"
+
+[benchmark]
+type = "builtin"
+trigger = "menu"
+launch_args = ["-console"]
+duration_hint_s = 120
+instructions = """
+One-time: subscribe to workshop item 3240880604 (CS2 FPS BENCHMARK DUST2).
+Per run: launch, open the console and run `map_workshop 3240880604`
+(fallback: Play > Practice > Workshop Maps), then start the benchmark from
+the map's in-world trigger. TODO verify the exact console syntax on first
+run. The map prints avg FPS / 1% lows to the console at the end -- screenshot
+or `con_logfile` them into the session notes; MangoHud CSV is the primary
+frametime record. Keep video settings + resolution stable across captures.
+"""
+
+[foz]
+# Dir exists but was empty on 2026-07-23 -- native titles may not populate
+# fozpipelinesv6; treat foz as best-effort for CS2 (snapshot may find nothing).
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/**/*pipeline_cache*"
+
+[[scenes]]
+id = "workshop_fps_benchmark"
+kind = "benchmark"
+protocol_doc = "docs/scenes/cs2_workshop_fps_benchmark.md"

@@ -1,0 +1,27 @@
+# Resident Evil 6 -- appid 221040, verified present in the local Steam shadercache
+# on 2026-07-28. Old DX9-era port: shaders come through DXVK, NOT vkd3d -- a different translation layer than every other title here. Useful contrast, flag it in any comparison.
+[game]
+slug = "re6"
+name = "Resident Evil 6"
+kind = "steam"
+appid = 221040
+runtime = "proton"
+engine = "MT Framework"
+api = "dxvk"
+# cohort NOT yet measured -- set only after a real gen-over-gen A/B.
+cohort = "unclassified"
+
+[benchmark]
+type = "manual-scene"
+trigger = "menu"
+launch_args = []
+duration_hint_s = 180
+instructions = """
+Corpus source only: this entry exists so the recorded pipeline cache can be
+collected and replayed. No capture protocol has been defined for this title.
+"""
+
+[foz]
+# Matches both layouts (flat fozpipelinesv6/*.foz and the nested
+# steamapprun_pipeline_cache.<hex>/ directories). Files only.
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/**/*pipeline_cache*"

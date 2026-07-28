@@ -26,7 +26,7 @@ Preserve any RADV_DEBUG or pipeline cache flags in the session notes.
 """
 
 [foz]
-cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/steamapprun_pipeline_cache.*"
+cache_glob = "steamapps/shadercache/{appid}/fozpipelinesv6/**/*pipeline_cache*"
 
 [[scenes]]
 id = "ward13_idle"

@@ -44,7 +44,23 @@
       "Read(//tmp/tcc_full_probe/**)",
       "Bash(./build/venv/bin/python3 -m py_compile src/tcc/cli.py src/tcc/foz.py src/tcc/stats.py src/tcc/mine.py)",
       "Bash(./build/venv/bin/tcc --help)",
-      "Bash(./build/venv/bin/tcc mine *)"
+      "Bash(./build/venv/bin/tcc mine *)",
+      "Bash(python3 -c ' *)",
+      "Bash(xxd)",
+      "Bash(build/install/bin/fossilize-list data/foz/remnant2/steamapp_pipeline_cache.foz --tag 4)",
+      "Bash(./build/venv/bin/python3 -m py_compile src/tcc/toolchain.py)",
+      "Bash(./build/venv/bin/python3 -m py_compile src/tcc/*.py)",
+      "Bash(sed -i 's|src/tcc/schemas/stats_table.schema.json|src/core/schemas/stats_table.schema.json|' src/analysis/stats.py)",
+      "Bash(sed -i 's|src/tcc/schemas/\\\\*.schema.json|src/core/schemas/*.schema.json|' src/core/session.py)",
+      "Bash(sed -i 's|walked up from src/tcc/paths.py|walked up from src/core/paths.py|' config/tcc.toml)",
+      "Bash(awk '{print $1}')",
+      "Bash(git status *)",
+      "Bash(./build/venv/bin/python3 -)",
+      "Bash(./build/venv/bin/tcc collect *)",
+      "Bash(tee /tmp/claude-1000/-home-methos-Documents-faculdade-TCC-bug-amd/f122d6f9-27fa-4ffd-bee8-c7ae2c85e311/scratchpad/collect.log)",
+      "Bash(break)",
+      "Bash(read -t 20 x)",
+      "Bash(./build/venv/bin/python3 -m py_compile src/analysis/compare.py src/shader_extractor/collect.py src/cli.py src/analysis/stats.py)"
     ]
   }
 }

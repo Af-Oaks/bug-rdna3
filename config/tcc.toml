@@ -1,5 +1,5 @@
 # Global tcc configuration. Relative paths are resolved against the repo
-# root (walked up from src/tcc/paths.py); ~ paths are expanded as-is.
+# root (walked up from src/core/paths.py); ~ paths are expanded as-is.
 
 [paths]
 data_dir = "data"
