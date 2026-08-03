@@ -28,13 +28,14 @@ from pathlib import Path
 import pandas as pd
 
 from core import config
+from core.errors import TccError
 from shader_extractor import foz as foz_mod
 from core.session import Session
 
 _DRIVER_PROFILE = {"system": "baseline", "stock": "stock", "custom": "custom"}
 
 
-class StatsError(Exception):
+class StatsError(TccError):
     pass
 
 
@@ -77,11 +78,19 @@ def _classify_column(header: str) -> str | None:
         return "scratch"
     if "subgroups per simd" in h:
         return "max_waves"
+    # Wave size (32 vs 64). Must be tested BEFORE "subgroup size" could fall
+    # through to anything else, and it is not optional: VOPD requires wave32,
+    # so this is the strongest single covariate for dual-issue emission
+    # (Remnant II: 17,482 wave64 shaders emitted VOPD zero times; 244 of 248
+    # wave32 shaders emitted it). It used to sit unpromoted in `extra`, where
+    # compare.py and mine.py could not see it at all.
+    if "subgroup size" in h:
+        return "subgroup_size"
     # M1-A: ACO's own per-stage counters. These are the thesis signals (VOPD
     # dual-issue, instruction mix, ACO's latency model) and compare.py needs
     # them as first-class numeric columns, not buried in the `extra` JSON.
     # Order matters: "vmem clause"/"smem clause" must lose to the clause check
-    # below, and "inverse throughput" must be tested before "throughput".
+    # below.
     if "clause" in h:
         return "vmem_clause" if "vmem" in h else ("smem_clause" if "smem" in h else None)
     if "inverse throughput" in h:
@@ -117,9 +126,17 @@ def _coerce(value: str):
             return value
 
 
-def load_stats_csv(csv_path: Path, driver: str) -> pd.DataFrame:
+def load_stats_csv(csv_path: Path, driver: str,
+                   provenance_map: dict[str, str] | None = None) -> pd.DataFrame:
     """Parse a raw fossilize-replay --enable-pipeline-stats CSV into the
-    tidy row schema (see src/core/schemas/stats_table.schema.json)."""
+    tidy row schema (see src/core/schemas/stats_table.schema.json).
+
+    `provenance_map` (hash -> "run_recorded") comes from the merged corpus
+    index. Merging every .foz for a game buys coverage but erases the file
+    boundary that distinguished pipelines THIS machine compiled from Steam's
+    downloaded pre-cache, so the distinction is re-attached here as a column.
+    Hashes absent from the map are steam_precache.
+    """
     rows: list[dict] = []
     with Path(csv_path).open(newline="", encoding="utf-8") as fh:
         reader = csv.reader(fh)
@@ -134,6 +151,8 @@ def load_stats_csv(csv_path: Path, driver: str) -> pd.DataFrame:
                     row[field] = value
                 else:
                     extra[col_name] = value
+            if provenance_map is not None:
+                row["provenance"] = provenance_map.get(str(row.get("pipeline_hash")), "steam_precache")
             row["extra"] = json.dumps(extra)
             rows.append(row)
     return pd.DataFrame(rows)
@@ -142,19 +161,6 @@ def load_stats_csv(csv_path: Path, driver: str) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # run: profile resolution + fossilize-replay + parse + save
 # ---------------------------------------------------------------------------
-
-
-def _default_foz_path(session: Session) -> Path:
-    scene = session.subdir("foz") / "scene.foz"
-    if scene.is_file():
-        return scene
-    candidates = sorted(session.subdir("foz").glob("*.foz"), key=lambda p: p.stat().st_mtime, reverse=True)
-    if candidates:
-        return candidates[0]
-    raise StatsError(
-        f"No foz database in {session.subdir('foz')}. Run `tcc foz import` or "
-        "`tcc foz extract` first, or pass --foz explicitly."
-    )
 
 
 def run(
@@ -174,33 +180,27 @@ def run(
     cfg = cfg or config.load_tcc_config()
     threads = threads or cfg.defaults.replay_threads
     timeout_s = timeout_s or cfg.defaults.replay_timeout_s
-    foz_path = Path(foz_path) if foz_path else _default_foz_path(session)
-    if not foz_path.is_file():
-        raise StatsError(f"No such foz database: {foz_path}")
+    foz_path = foz_mod.resolve_foz(session, explicit=foz_path)
 
     profile_name = _DRIVER_PROFILE[driver]
     profile = config.load_profile_config(profile_name)
     env = config.profile_env(profile, session.root, force_nocache=True, cfg=cfg)
 
     raw_csv = session.subdir("stats") / f"_raw.{driver}.csv"
-    result = foz_mod.replay_stats(foz_path, raw_csv, env, threads=threads, timeout_s=timeout_s)
-
-    log_dir = session.subdir("logs")
-    (log_dir / f"stats_replay_{driver}.stdout.log").write_text(result.stdout, encoding="utf-8")
-    (log_dir / f"stats_replay_{driver}.stderr.log").write_text(result.stderr, encoding="utf-8")
-    session.record_step(
-        f"stats_replay_{driver}",
-        ["fossilize-replay", "--enable-pipeline-stats", str(raw_csv), str(foz_path)],
-        result.returncode,
-        num_rows=result.num_rows,
-        failure_count=result.failure_count,
+    # run_recorded (inside replay_stats) writes the logs and the step record,
+    # including the environment snapshot that names the ICD.
+    result = foz_mod.replay_stats(
+        session, f"stats_replay_{driver}", foz_path, raw_csv, env,
+        threads=threads, timeout_s=timeout_s,
     )
     session.use_profile(profile_name)
 
-    if result.returncode not in (0, None) and result.num_rows == 0:
+    if result.returncode != 0 and result.num_rows == 0:
         raise StatsError(f"fossilize-replay produced no stats rows (returncode={result.returncode})")
 
-    df = load_stats_csv(raw_csv, driver)
+    from shader_extractor import corpus as corpus_mod
+
+    df = load_stats_csv(raw_csv, driver, provenance_map=corpus_mod.provenance_lookup(session.game))
     out_csv = session.subdir("stats") / f"stats.{driver}.csv"
     df.to_csv(out_csv, index=False)
     session.record_artifact(out_csv, kind="stats_table", producer="tcc stats run", confidence="exact")

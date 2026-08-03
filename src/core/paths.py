@@ -7,7 +7,6 @@ without risking a circular import.
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 
@@ -29,14 +28,6 @@ def data_dir() -> Path:
 
 def session_root(game: str, session_id: str) -> Path:
     return data_dir() / "sessions" / game / session_id
-
-
-def steam_root() -> Path:
-    """Default Steam library root. Override with $TCC_STEAM_ROOT for testing."""
-    override = os.environ.get("TCC_STEAM_ROOT")
-    if override:
-        return Path(override).expanduser()
-    return Path.home() / ".local" / "share" / "Steam"
 
 
 def armed_profile_path() -> Path:

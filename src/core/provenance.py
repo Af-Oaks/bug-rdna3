@@ -28,8 +28,19 @@ def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
     return digest.hexdigest()
 
 
-def env_snapshot(prefixes: tuple[str, ...] = ENV_SNAPSHOT_PREFIXES) -> dict[str, str]:
-    return {k: v for k, v in os.environ.items() if k.startswith(prefixes)}
+def env_snapshot(
+    env: dict[str, str] | None = None,
+    prefixes: tuple[str, ...] = ENV_SNAPSHOT_PREFIXES,
+) -> dict[str, str]:
+    """The driver-relevant variables from `env` (default: this process's).
+
+    Callers must pass the environment the CHILD actually received. Snapshotting
+    os.environ instead records the parent's environment, which for a stats run
+    contains no VK_ICD_FILENAMES at all -- the ICD is injected per-subprocess.
+    That produced an empty snapshot on every recorded step, defeating the whole
+    point of recording one."""
+    source = os.environ if env is None else env
+    return {k: v for k, v in source.items() if k.startswith(prefixes)}
 
 
 def _pump(stream: IO[bytes], log_file: IO[bytes], mirror: IO[bytes]) -> None:
@@ -92,6 +103,6 @@ def run_recorded(
         timed_out=timed_out,
         stdout_log=str(stdout_path.relative_to(session.root)),
         stderr_log=str(stderr_path.relative_to(session.root)),
-        env_snapshot=env_snapshot(),
+        env_snapshot=env_snapshot(run_env),
     )
     return subprocess.CompletedProcess(argv_str, returncode)

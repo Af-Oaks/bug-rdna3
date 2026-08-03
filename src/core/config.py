@@ -12,11 +12,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from . import paths
+from .errors import TccError
 
 CONFIG_DIR_NAME = "config"
 
 
-class ConfigError(Exception):
+class ConfigError(TccError):
     """Missing or malformed configuration."""
 
 
@@ -52,7 +53,6 @@ class Paths:
     mesa_custom: Path
     tools_dir: Path
     steam_root: Path
-    armed_profile: Path
     wrapper: Path
 
 
@@ -61,7 +61,6 @@ class Defaults:
     gpu_arch: str
     replay_threads: int
     replay_timeout_s: int
-    top_n_offenders: int
 
 
 @dataclass
@@ -81,14 +80,12 @@ def load_tcc_config() -> TccConfig:
             mesa_custom=_resolve_repo_path(p.get("mesa_custom", "build/install_custom")),
             tools_dir=_resolve_repo_path(p.get("tools_dir", "tools")),
             steam_root=Path(p.get("steam_root", "~/.local/share/Steam")).expanduser(),
-            armed_profile=Path(p.get("armed_profile", "~/.tcc/armed.json")).expanduser(),
             wrapper=_resolve_repo_path(p.get("wrapper", "bin/tcc-launch.sh")),
         ),
         defaults=Defaults(
             gpu_arch=d.get("gpu_arch", "gfx1101"),
             replay_threads=d.get("replay_threads", 4),
             replay_timeout_s=d.get("replay_timeout_s", 30),
-            top_n_offenders=d.get("top_n_offenders", 25),
         ),
     )
 
@@ -207,12 +204,6 @@ class ProfileConfig:
 
 def profiles_dir() -> Path:
     return config_dir() / "profiles"
-
-
-def list_profiles() -> list[str]:
-    if not profiles_dir().is_dir():
-        return []
-    return sorted(p.stem for p in profiles_dir().glob("*.toml"))
 
 
 def load_profile_config(name: str) -> ProfileConfig:

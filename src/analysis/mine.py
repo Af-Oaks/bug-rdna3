@@ -32,8 +32,17 @@ def _zscore(series: pd.Series) -> pd.Series:
 
 
 def score(df: pd.DataFrame) -> pd.Series:
+    """Offender score, z-scored within each (driver, stage) population.
+
+    Grouping by stage is because a compute shader's code-size distribution says
+    nothing about a fragment shader's. Grouping by DRIVER too is because
+    `load_session_stats(driver=None)` concatenates every stats.*.csv in the
+    session: with stock and custom both present, each shader appeared twice and
+    was z-scored against a doubled distribution containing its own duplicate.
+    """
     result = pd.Series(0.0, index=df.index)
-    for _, group in df.groupby("stage"):
+    group_keys = [k for k in ("driver", "stage") if k in df.columns] or ["stage"]
+    for _, group in df.groupby(group_keys):
         vgprs = _zscore(group["vgprs"]) if "vgprs" in group else 0.0
         neg_waves = _zscore(-group["max_waves"]) if "max_waves" in group else 0.0
         code_size = _zscore(group["code_size"]) if "code_size" in group else 0.0

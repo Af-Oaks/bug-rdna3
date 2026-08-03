@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from core import config, paths, util
+from core.errors import TccError
 from core.session import Session
 
 _KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -27,7 +28,7 @@ _KEY_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 DEFAULT_TTL_MIN = 240
 
 
-class ArmError(Exception):
+class ArmError(TccError):
     pass
 
 

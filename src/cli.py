@@ -1,35 +1,38 @@
 """tcc command-line interface.
 
-Fully implemented: --version, doctor, session (new/list/show/note/close)
-from Phase 1; foz (snapshot/delta/extract/import), stats (run/show), and
-mine from Phase 2. Every other subcommand from plan §4 exists as a real
-parser (so --help and scripts written against the final surface both work)
-but its handler prints "not implemented yet" with the phase that will
-implement it.
+Every subcommand here is implemented. Planned-but-unwritten commands used to
+exist as stub parsers that printed "not implemented yet"; they were deleted
+2026-08-03 because `--help` advertising six command groups that all exit 2 is
+worse than a short help listing. The planned surface lives in docs/, not in
+argparse.
+
+Handlers stay thin: parse, call one module function, print. Logic belongs in
+the package that owns the concept. Every user-facing failure is a TccError and
+is turned into one `error: ...` line by main().
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import sys
 from pathlib import Path
 
 from core import __version__
+from core.errors import TccError
 from launcher import arm as arm_mod
 from benchmark import game_bench as bench_mod
 from core import config as config_mod
+from shader_extractor import collect as collect_mod
+from shader_extractor import corpus as corpus_mod
 from shader_extractor import foz as foz_mod
+from analysis import compare as compare_mod
 from analysis import mine as mine_mod
 from core import session as session_mod
 from analysis import stats as stats_mod
 from launcher import steam as steam_mod
 from core import toolchain
-
-
-def _not_implemented(command: str, phase: int) -> int:
-    print(f"tcc {command}: not implemented yet (Phase {phase})", file=sys.stderr)
-    return 2
 
 
 # ---------------------------------------------------------------------------
@@ -251,10 +254,6 @@ def _add_mine_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentP
 def cmd_compare(args: argparse.Namespace) -> int:
     """Metric 1: diff two stats tables. --a/--b are driver labels resolved
     inside the session's stats/ dir, or explicit CSV paths."""
-    from pathlib import Path
-
-    from analysis import compare as compare_mod
-
     session = session_mod.Session.load(args.session) if args.session else None
 
     def resolve(spec: str) -> tuple[Path, str]:
@@ -275,9 +274,63 @@ def cmd_compare(args: argparse.Namespace) -> int:
     return 0
 
 
+_STATUS_LABEL = {
+    "current": "CURRENT",
+    "archived": "ARCHIVED",
+    "no_cache": "NO CACHE",
+    "stale": "STALE",
+    "not_collected": "NOT COLLECTED",
+    "error": "ERROR",
+}
+
+
+def _human_bytes(n: int) -> str:
+    if n <= 0:
+        return "--"
+    for unit, scale in (("GB", 1e9), ("MB", 1e6), ("kB", 1e3)):
+        if n >= scale:
+            return f"{n / scale:.1f} {unit}"
+    return f"{n} B"
+
+
+def cmd_collect_check(args: argparse.Namespace) -> int:
+    """Report which games still hold shader data that is not safely copied.
+    Exit 1 if any game would lose data on uninstall, so this can gate a script."""
+    slugs = args.game.split(",") if args.game else None
+    rows = collect_mod.check_all(slugs=slugs, deep=args.deep)
+
+    if args.json:
+        print(json.dumps([vars(r) for r in rows], indent=2))
+    else:
+        print(f"{'slug':<20} {'installed':<10} {'collected':>10} {'live':>10}  status")
+        for r in sorted(rows, key=lambda r: (r.safe_to_uninstall, r.slug)):
+            print(f"{r.slug:<20} {'yes' if r.installed else 'no':<10} "
+                  f"{_human_bytes(r.collected_bytes):>10} {_human_bytes(r.live_bytes):>10}  "
+                  f"{_STATUS_LABEL[r.status]}")
+
+    at_risk = [r for r in rows if not r.safe_to_uninstall and r.status != "error"]
+    errors = [r for r in rows if r.status == "error"]
+    if not args.json:
+        counts = {}
+        for r in rows:
+            counts[r.status] = counts.get(r.status, 0) + 1
+        print("\n" + " · ".join(f"{n} {_STATUS_LABEL[s].lower()}" for s, n in sorted(counts.items())))
+        for r in errors:
+            print(f"  {r.slug}: {r.detail}")
+        if at_risk:
+            print(f"\n⚠ {len(at_risk)} game(s) hold shader data that is NOT saved — do not uninstall:")
+            for r in at_risk:
+                print(f"    {r.slug:<20} {r.detail}")
+            print(f"\n  tcc collect --game {','.join(r.slug for r in at_risk)}")
+        else:
+            print("\n✅ every live shadercache is collected — safe to uninstall any of them.")
+    return 1 if at_risk else 0
+
+
 def cmd_collect(args: argparse.Namespace) -> int:
     """Copy recorded pipeline caches out of the Steam shadercache into data/foz/."""
-    from shader_extractor import collect as collect_mod
+    if args.check:
+        return cmd_collect_check(args)
 
     slugs = args.game.split(",") if args.game else None
     result = collect_mod.collect_all(slugs=slugs, skip_whitelist=args.skip_whitelist)
@@ -294,12 +347,72 @@ def cmd_collect(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_corpus_build(args: argparse.Namespace) -> int:
+    """Merge every collected .foz for a game into one deduplicated corpus."""
+    slugs = args.game.split(",") if args.game else [
+        d.name for d in sorted((config_mod.load_tcc_config().paths.data_dir / "foz").iterdir())
+        if d.is_dir()
+    ]
+    results, failures = [], {}
+    for slug in slugs:
+        try:
+            results.append(corpus_mod.build(slug, force=args.force))
+        except corpus_mod.CorpusError as exc:
+            failures[slug] = str(exc)
+
+    for r in results:
+        merged, best = r.gain("graphics")
+        extra = merged - best
+        pct = f"+{extra / best * 100:.1f}%" if best else "n/a"
+        print(f"{r.slug:<18} {r.source_count} file(s) -> {merged:,} graphics "
+              f"(best single {best:,}, {pct}) {r.foz_path}")
+    for slug, why in sorted(failures.items()):
+        print(f"{slug:<18} SKIPPED  {why}", file=sys.stderr)
+    return 1 if failures and not results else 0
+
+
+def cmd_corpus_show(args: argparse.Namespace) -> int:
+    rows = corpus_mod.list_built()
+    if args.json:
+        print(json.dumps(rows, indent=2))
+        return 0
+    if not rows:
+        print("no corpus built yet; run `tcc corpus build --game <slug>`")
+        return 0
+    print(f"{'slug':<18} {'size':>9} {'graphics':>10} {'run_rec':>9} {'precache':>9}  built")
+    for r in rows:
+        g = r["counts"].get("graphics", {})
+        print(f"{r['slug']:<18} {r['size_bytes'] / 1e6:>8.1f}M {g.get('total', 0):>10,} "
+              f"{g.get('run_recorded', 0):>9,} {g.get('steam_precache', 0):>9,}  {r['built_at']}")
+    return 0
+
+
+def _add_corpus_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
+    p_corpus = sub.add_parser("corpus", parents=[common],
+                              help="merge all collected .foz per game into one database")
+    corpus_sub = p_corpus.add_subparsers(dest="corpus_action", required=True)
+
+    p = corpus_sub.add_parser("build", parents=[common])
+    p.add_argument("--game", default=None, help="comma-separated slugs (default: everything collected)")
+    p.add_argument("--force", action="store_true", help="rebuild an existing corpus")
+    p.set_defaults(func=cmd_corpus_build)
+
+    p = corpus_sub.add_parser("show", parents=[common])
+    p.set_defaults(func=cmd_corpus_show)
+
+
 def _add_collect_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
     p = sub.add_parser("collect", parents=[common],
                        help="copy Steam-recorded pipeline caches into data/foz/<game>/")
     p.add_argument("--game", default=None, help="comma-separated slugs (default: all configured)")
     p.add_argument("--skip-whitelist", action="store_true",
                    help="omit Valve's steam_pipeline_cache_whitelist.foz files")
+    p.add_argument("--check", action="store_true",
+                   help="don't copy: report which games still hold unsaved shader data "
+                        "(exit 1 if any). Run before uninstalling anything.")
+    p.add_argument("--deep", action="store_true",
+                   help="with --check, re-hash every live file instead of comparing sizes "
+                        "(reads the whole live cache; slow)")
     p.set_defaults(func=cmd_collect)
 
 
@@ -344,8 +457,6 @@ def cmd_launch(args: argparse.Namespace) -> int:
         print("error: pass --game or --session", file=sys.stderr)
         return 2
     game_cfg = config_mod.load_game_config(game_slug)
-    import shlex
-
     extra = shlex.split(args.args) if args.args else []
     proc = steam_mod.launch(game_cfg, extra_args=extra)
     if session:
@@ -434,102 +545,13 @@ def _add_bench_parser(sub: argparse._SubParsersAction, common: argparse.Argument
     p.set_defaults(func=cmd_bench_summarize)
 
 
-def _add_stub_commands(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
-    """Parsers for every subcommand in plan §4 that isn't implemented yet.
-    Each prints "not implemented yet (Phase N)" and exits 2."""
-
-    def stub(name: str, phase: int):
-        return lambda args: _not_implemented(name, phase)
-
-    # isa -- Phase 4 (isa.py, hazards port) ---------------------------------
-    p_isa = sub.add_parser("isa", parents=[common])
-    isa_sub = p_isa.add_subparsers(dest="isa_action", required=True)
-    p = isa_sub.add_parser("extract", parents=[common])
-    p.add_argument("--session", required=True)
-    p.add_argument("--driver", required=True)
-    p.add_argument("--hash", action="append", default=None)
-    p.add_argument("--top", type=int, default=None)
-    p.set_defaults(func=stub("isa extract", 4))
-    p = isa_sub.add_parser("metrics", parents=[common])
-    p.add_argument("--deep", action="store_true")
-    p.set_defaults(func=stub("isa metrics", 4))
-    p = isa_sub.add_parser("diff", parents=[common])
-    p.add_argument("--hash", required=True)
-    p.add_argument("--a", required=True)
-    p.add_argument("--b", required=True)
-    p.set_defaults(func=stub("isa diff", 4))
-
-    # rga -- Phase 4 (rga.py) ------------------------------------------------
-    p_rga = sub.add_parser("rga", parents=[common])
-    rga_sub = p_rga.add_subparsers(dest="rga_action", required=True)
-    p = rga_sub.add_parser("run", parents=[common])
-    p.add_argument("--session", required=True)
-    p.add_argument("--hash", default=None)
-    p.add_argument("--top", type=int, default=None)
-    p.set_defaults(func=stub("rga run", 4))
-
-    p_compare = sub.add_parser("compare", parents=[common],
-                               help="diff two stats tables (Metric 1)")
-    p_compare.add_argument("--session", default=None)
-    p_compare.add_argument("--a", required=True, help="driver label or path to stats CSV")
-    p_compare.add_argument("--b", required=True, help="driver label or path to stats CSV")
-    p_compare.add_argument("--out", default=None)
-    p_compare.set_defaults(func=cmd_compare)
-
-    # capture -- Phase 6 (renderdoc_ctl.py) -----------------------------------
-    p_capture = sub.add_parser("capture", parents=[common])
-    capture_sub = p_capture.add_subparsers(dest="capture_action", required=True)
-    p = capture_sub.add_parser("rdc", parents=[common])
-    p.add_argument("--session", required=True)
-    p.add_argument("--frame", type=int, default=None)
-    p.add_argument("--after", type=int, default=None)
-    p.add_argument("--collect-only", action="store_true")
-    p.set_defaults(func=stub("capture rdc", 6))
-    p = capture_sub.add_parser("sqtt", parents=[common])
-    p.add_argument("--session", required=True)
-    p.set_defaults(func=stub("capture sqtt", 6))
-
-    # lab -- Phase 5 (shaderlab) ----------------------------------------------
-    p_lab = sub.add_parser("lab", parents=[common])
-    lab_sub = p_lab.add_subparsers(dest="lab_action", required=True)
-    lab_sub.add_parser("list", parents=[common]).set_defaults(func=stub("lab list", 5))
-    p = lab_sub.add_parser("new", parents=[common])
-    p.add_argument("name")
-    p.set_defaults(func=stub("lab new", 5))
-    lab_sub.add_parser("build", parents=[common]).set_defaults(func=stub("lab build", 5))
-    p = lab_sub.add_parser("run", parents=[common])
-    p.add_argument("--exp", required=True)
-    p.add_argument("--driver", required=True)
-    p.add_argument("--runs", type=int, default=5)
-    p.add_argument("--vopd", choices=["on", "off"], default=None)
-    p.set_defaults(func=stub("lab run", 5))
-    p = lab_sub.add_parser("isa", parents=[common])
-    p.add_argument("--exp", required=True)
-    p.add_argument("--driver", required=True)
-    p.set_defaults(func=stub("lab isa", 5))
-    p = lab_sub.add_parser("compare", parents=[common])
-    p.add_argument("--exp", required=True)
-    p.add_argument("--drivers", default=None)
-    p.set_defaults(func=stub("lab compare", 5))
-
-    # report -- Phase 7 (report.py) -------------------------------------------
-    p_report = sub.add_parser("report", parents=[common])
-    report_sub = p_report.add_subparsers(dest="report_action", required=True)
-    p = report_sub.add_parser("session", parents=[common])
-    p.add_argument("session")
+def _add_compare_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
+    p = sub.add_parser("compare", parents=[common], help="diff two stats tables (Metric 1)")
+    p.add_argument("--session", default=None)
+    p.add_argument("--a", required=True, help="driver label or path to stats CSV")
+    p.add_argument("--b", required=True, help="driver label or path to stats CSV")
     p.add_argument("--out", default=None)
-    p.set_defaults(func=stub("report session", 7))
-    p = report_sub.add_parser("cohort", parents=[common])
-    p.add_argument("--games", default=None)
-    p.set_defaults(func=stub("report cohort", 7))
-
-    # mesa -- Phase 4 (rebuild cadence lines up with the stock/custom compare
-    # workflow: rebuild custom ACO, then `tcc compare` to check the delta) ----
-    p_mesa = sub.add_parser("mesa", parents=[common])
-    mesa_sub = p_mesa.add_subparsers(dest="mesa_action", required=True)
-    p = mesa_sub.add_parser("build", parents=[common])
-    p.add_argument("--variant", choices=["stock", "custom"], required=True)
-    p.set_defaults(func=stub("mesa build", 4))
+    p.set_defaults(func=cmd_compare)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -548,9 +570,10 @@ def build_parser() -> argparse.ArgumentParser:
     _add_stats_parser(sub, common)
     _add_mine_parser(sub, common)
     _add_collect_parser(sub, common)
+    _add_corpus_parser(sub, common)
     _add_arm_launch_parsers(sub, common)
     _add_bench_parser(sub, common)
-    _add_stub_commands(sub, common)
+    _add_compare_parser(sub, common)
     return parser
 
 
@@ -562,15 +585,10 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     try:
         return args.func(args)
-    except (
-        foz_mod.FozError,
-        stats_mod.StatsError,
-        session_mod.SessionError,
-        arm_mod.ArmError,
-        bench_mod.BenchError,
-        steam_mod.SteamError,
-        config_mod.ConfigError,
-    ) as exc:
+    except TccError as exc:
+        # One base class, caught once. The explicit tuple this replaced was
+        # edited from a distance and went stale twice -- CompareError and
+        # CollectError both reached users as tracebacks.
         print(f"error: {exc}", file=sys.stderr)
         return 1
 

@@ -37,14 +37,23 @@ driver's internal `0x`-prefixed hash and joins against `fossilize-list` output
 fail. Likewise `Pre-Sched VGPRs` contains `vgpr` and must be excluded before the
 VGPR check, or scheduling-time pressure gets recorded as final register usage.
 
+`subgroup_size` (wave32 vs wave64) is promoted deliberately rather than left in
+`extra`: VOPD is only emitted for wave32, so it is the strongest covariate for
+dual-issue and neither `compare.py` nor `mine.py` can see inside the `extra`
+blob. Each row also carries `provenance` (`run_recorded` / `steam_precache`),
+joined from the corpus index — merging every `.foz` for a game buys coverage but
+erases the file boundary that distinguished them, so it is reattached here.
+
 ### `mine.py` — who are the worst offenders
 
 `score = z(vgprs) + z(-max_waves) + z(code_size) + 3·z(spilled_vgprs)`
 
-Z-scored **per stage**, because a compute shader's code-size distribution has
-nothing to say about a fragment shader's. Spills carry triple weight because a
-spill is a qualitatively different event from high register usage — it means the
-compiler ran out and went to memory.
+Z-scored per **(driver, stage)**. Stage because a compute shader's code-size
+distribution has nothing to say about a fragment shader's; driver because the
+pooled default concatenates every `stats.*.csv` in the session, and without it
+each shader would be z-scored against a population containing its own duplicate.
+Spills carry triple weight because a spill is qualitatively different from high
+register usage — the compiler ran out and went to memory.
 
 Its purpose is to pick the top-N shaders worth disassembling. Full ISA parsing
 of every pipeline is not affordable; ranked offenders make it affordable.
@@ -63,8 +72,17 @@ diverges. It passed on 2026-07-28: 17,719 joined rows, all 18 metrics at zero
 delta, with strace confirming the two ICDs loaded genuinely different binaries
 rather than silently falling back to the same one.
 
-Direction is explicit, not assumed: `LOWER_IS_BETTER` for cost metrics,
-`HIGHER_IS_BETTER` for occupancy and VOPD.
+Direction is explicit, not assumed, and has three cases rather than two:
+`LOWER_IS_BETTER` for cost metrics, `HIGHER_IS_BETTER` for occupancy and
+`vopd_ratio`, and `NEUTRAL` for `subgroup_size` — where a *change* is the signal
+and neither direction is "better". VOPD is compared as a **ratio to VALU**, never
+as a raw count, because a raw count rises when a shader merely gets bigger. When
+wave size moves the report prints a dedicated warning, since VOPD only exists on
+wave32 and any ratio movement must be read against that first.
+
+Duplicate `(hash, stage)` rows are collapsed to force a 1:1 join, and the count
+is **reported** — if the two sides collapse different amounts the comparison is
+not like-for-like, and that has to be visible.
 
 ## What this package is currently missing
 
@@ -84,44 +102,27 @@ The old `hazards.py` used `networkx`, which is no longer a declared dependency.
 
 ## Known problems, costs, and things I would flag
 
-1. **The most important column is still not a column.** `Subgroup size` — wave32
-   vs wave64 — sits unpromoted in the `extra` JSON blob, so `compare.py` cannot
-   diff it and `mine.py` cannot rank by it. It is the single strongest covariate
-   for VOPD in the data already collected: on Remnant II, 17,482 wave64 shaders
-   emitted VOPD **zero** times, while 244 of 248 wave32 shaders emitted it. That
-   reframes the whole VOPD hypothesis from "the compiler fails to find
-   dual-issue pairs" to "the compiler almost never picks the wave size that
-   allows them". Promoting it in `_classify_column()` is roughly a two-line
-   change and is the highest-value edit in this package.
-2. **`vopd` in `HIGHER_IS_BETTER` is a raw count, and a raw count is not a
-   quality signal.** A shader with more VOPD instructions because it has more
-   instructions overall is not doing better. It needs normalising — VOPD per
-   VALU, or per instruction — before the "improved / regressed" columns mean
-   anything. As it stands, `compare.py` will confidently report a VOPD
-   improvement for a shader that simply got bigger.
-3. **`tcc mine` pools drivers by default.** `--driver` defaults to `None`, which
-   makes `load_session_stats()` concatenate every `stats.*.csv` in the session.
-   With both stock and custom present, each shader appears twice and the
-   z-scores are computed against a doubled population. Ranking is only
-   meaningful within one driver; the default does the other thing.
-4. **`compare_frames()` discards duplicate rows silently.** It forces a 1:1 join
-   with `groupby(JOIN_KEY).first()`, which drops any second row for a
-   `(hash, stage)` pair and never reports how many it dropped. The comment says
-   this happens "when one pipeline reports several executables for a stage" —
-   if those executables ever carry *different* stats, half the data vanishes
-   without a warning. At minimum this should count and report the collapses.
-5. **A comment describes a guard that does not exist.** `_classify_column()`
-   says `"inverse throughput" must be tested before "throughput"`. There is no
-   `throughput` branch anywhere in the function. Either the guard was removed or
-   it was never needed; the comment now misleads the next reader about the
-   ordering constraints, which is exactly the ordering that has already caused
-   one real bug in this function.
-6. **The offender-score weights are a judgement call with no calibration.** The
+1. **The offender-score weights are a judgement call with no calibration.** The
    `3×` on spills and the equal weighting of the other three terms are
    reasonable priors, not measured. Nothing has yet checked whether high-score
    shaders correlate with anything Metric 2 sees. Until that check exists, the
-   score ranks candidates for inspection and should not be described as a
-   severity measure.
-7. **`CompareError` is not in `cli.main()`'s handled exception tuple**, so
-   `tcc compare` with a missing stats file prints a traceback where every other
-   command prints `error: ...`.
+   score ranks candidates for inspection and must not be described as a severity
+   measure. This is the one to fix with data, not code.
+2. **The wave32/VOPD finding is still n = 1 game.** It reproduces cleanly
+   (98.4% vs 0.0%) but on Remnant II alone — one vkd3d-translated,
+   compute-heavy title. Metro EE is the opposite shape (102,393 graphics / 213
+   compute). Until the corpus replay runs across several games grouped by
+   `cohort` and `api`, the safe phrasing is: *"In one vkd3d-translated title,
+   VOPD emission was confined to wave32 shaders, which were 1.4% of the
+   sample."*
+3. **`vopd_ratio` divides by VALU, which is a choice, not a fact.** VOPD per
+   *instruction* would give a different denominator and a different ranking.
+   VALU was chosen because dual-issue pairs are VALU operations, so it measures
+   "of the work that could have been paired, how much was" — but this should be
+   stated wherever the number appears.
+4. **`mine.py` writes the full ranked table to `offenders.csv` every run**,
+   which for the merged corpus is 17k+ rows — the top-N is only what gets
+   returned for display. Harmless, but the file name implies a shortlist.
+5. **Neither `isa.py` nor `hazards.py` exists**, so nothing here reads the
+   machine code the compiler actually emitted; every number in this package is
+   the driver's self-report.

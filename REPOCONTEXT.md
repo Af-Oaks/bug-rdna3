@@ -1,181 +1,136 @@
-# Project Context
+# Project Rules
 
-This repository is a thesis (TCC) workspace investigating why AMD RDNA3 shows very different
-gen-over-gen gains across games and workloads relative to RDNA2-era expectations.
-Hardware target: AMD Radeon RX 7800 XT — Navi 32 — **ISA target `gfx1101`**
-(NOT gfx1100; that is Navi 31). Stack: Ubuntu 24.04 + Steam/Proton + Vulkan + Mesa RADV/ACO,
-with two local Mesa builds: stock (`build/install`) and custom ACO (`build/install_custom`,
-built from the `custom_mesa_layer/` overlay — currently unmodified, so both compilers are
-byte-identical until the first real ACO experiment lands).
+Custom rules for this repository. `AGENTS.md` §0.8 points here; these complement
+it and win on conflict. The mechanism is in [DOMAIN.md](DOMAIN.md), live status
+in [ONGOING.md](ONGOING.md), the queue in [TODO.md](TODO.md).
 
-Microarchitectural hypotheses under investigation (as measurable correlations, not verdicts):
+This repo is a thesis workspace measuring why AMD RDNA3 shows uneven
+gen-over-gen gains. Target: RX 7800 XT, Navi 32, **gfx1101**.
 
-- **s_delay_alu cost**: RDNA3 moved data-hazard handling from hardware interlocks to
-  compiler-inserted `s_delay_alu`; measure its density and theoretical stall impact.
-- **VOPD (dual-issue) underuse**: `v_dual_*` requires near-perfect operand/bank conditions;
-  measure how often ACO actually emits it and what forcing it on/off changes.
-- **VGPR pressure / occupancy**: register pressure vs waves-per-SIMD limits.
+## Read in this order
 
-## Framing (unchanged, important)
+1. **[ONGOING.md](ONGOING.md)** — where we stopped, what runs next. Read FIRST.
+2. **[DOMAIN.md](DOMAIN.md)** — what a `.foz` is, why replay recompiles, what the
+   columns mean, what the hypotheses are and where they stand.
+3. **[src/CONTEXT.md](src/CONTEXT.md)** — the code, explained per folder.
+4. **[TODO.md](TODO.md)** / **[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md)** — the plan.
 
-- Do NOT frame the project as proving an architectural flaw.
-- Correct framing: investigate which workload, pipeline, shader, compiler, and runtime
-  characteristics correlate with high gains versus low gains on RDNA3.
-- The workflow must support side-by-side comparison of high-gain and low-gain titles and
-  baseline vs modified ACO.
+## Layout
 
-## Current Structure (post-rework, branch `rework`)
-
-- `src/` — the Python source root, split into **contextual top-level packages** (there is no
-  umbrella `tcc` package; it was removed 2026-07-28). CLI entry point `tcc` is `src/cli.py`,
-  installed in `build/venv`, run as `./build/venv/bin/tcc`.
-  - `core/` — config, paths, session, provenance, util, toolchain discovery, `schemas/`
-  - `shader_extractor/` — `foz.py`: snapshot / delta / prune / extract from Steam caches
-  - `analysis/` — `stats.py`, `mine.py` (later `compare.py`, `isa.py`, `hazards.py`)
+- `src/` — contextual top-level packages, no umbrella package. Entry point
+  `tcc` is `src/cli.py`, installed in `build/venv`, run as `./build/venv/bin/tcc`.
+  - `core/` — config, paths, session, provenance, errors, toolchain, `schemas/`
+  - `shader_extractor/` — `foz.py`, `collect.py`, `corpus.py`
+  - `analysis/` — `stats.py`, `mine.py`, `compare.py` (later `isa.py`)
   - `benchmark/` — `game_bench.py` (later `shaderbench.py`, `ledger.py`)
-  - `launcher/` — `arm.py`, `steam.py` (the armed-profile launch path)
-  New modules go in the package that owns the concept; do not create an umbrella package.
-  **Every folder under `src/` carries a `CONTEXT.md`** — the human explanation of what
-  lives there and why. Start at [src/CONTEXT.md](src/CONTEXT.md). See
-  "Folder CONTEXT.md protocol" below.
-- `config/` — tracked TOML configs: `tcc.toml` (global), `games/*.toml` (the game matrix),
-  `profiles/*.toml` (experiment variants: driver ICD, RADV flags, capture layers, mangohud).
-- `bin/tcc-launch.sh` — Steam `%command%` wrapper (Phase 3; reads `~/.tcc/armed.env`).
-- `shaderlab/` — authored GLSL experiments + C++ Vulkan dispatch harness (Phase 5).
-- `data/` — gitignored: sessions, foz caches, shaderlab outputs, archived legacy dumps.
-- `custom_mesa_layer/` + `scripts/{setup_env,build_custom_aco}.sh` — the ACO experiment area.
-- `docs/` — PLAN.md (approved rework plan), THESIS_NOTES.md, later SETUP/WORKFLOWS/GAMES.
-- `_attic/` — **deleted 2026-07-28** and gitignored. The `stall_ratio`/`vopd_ratio` formulas
-  needed for `analysis/isa.py` and the hazard DAG for `analysis/hazards.py` are recoverable
-  from git history: `git show a7f0d75:_attic/prototypes/triage.py` (and `hazards.py`).
-  `hazards.py` used `networkx`, which is no longer a declared dependency — re-add it if that
-  port happens.
-- **`ONGOING.md` at the repo root is the live working context — read it FIRST in any new
-  session, and update it after every prompt (see "ONGOING.md protocol" below).**
-- **`TODO.md`** is the phase/task tracker (what is done vs left); read it right after ONGOING.md.
-- `docs/METRICS_PLAN.md` — Metrics 1 & 2 (static compiler stats + runtime FPS, calibration bridge).
-- `docs/SHADERBENCH_PLAN.md` — Metric 3 (execute shaders extracted from game `.foz` files as a
-  deterministic workload) + the corpus and ledger design.
+  - `launcher/` — `arm.py`, `steam.py`
+- `config/` — `tcc.toml`, `games/*.toml` (the matrix), `profiles/*.toml`.
+- `bin/tcc-launch.sh` — the Steam `%command%` wrapper.
+- `data/` — gitignored: `sessions/`, `foz/` (verified archive), `corpus/` (merged).
+- `custom_mesa_layer/` + `scripts/build_custom_aco.sh` — the ACO experiment area.
+
+New modules go in the package that owns the concept. Do not create an umbrella
+package.
+
+## Code rules
+
+- **No dead code.** A function nothing calls gets deleted or gets a caller in the
+  same change. Same for config keys: a key nothing reads is worse than dead code
+  because it *looks* like a control.
+- **No compatibility layers**, no shims, no fallbacks, no defaults defending
+  against states the schema forbids. If the data is malformed, fail loudly.
+  Two things that look like compat and are not — **do not delete them**:
+  the dual `.foz` layout handling (both layouts are live on these drives) and
+  `_classify_column`'s substring matching (forward-compat for a vendored tool
+  we rebuild).
+- **One owner per decision.** No second implementation of a rule that already
+  exists elsewhere — filename flattening, foz selection, environment building.
+- **Every user-facing error subclasses `core.errors.TccError`.** Programming
+  errors must not: those should crash with a traceback.
+- **No stubs.** Planned commands live in `docs/`, not in argparse. Fifteen stub
+  parsers were deleted 2026-08-03 because `--help` advertising six command groups
+  that all exit 2 is worse than a short help listing.
+
+## Measurement rules
+
+- Everything is session-scoped. Artifacts land in
+  `data/sessions/<game>/<session_id>/` with sha256 provenance and step records.
+- **Every subprocess whose output could reach the thesis goes through
+  `provenance.run_recorded()`** — it records the environment the child actually
+  received, which is the only machine-checkable record of which compiler produced
+  a number. Snapshot the child's env, never `os.environ`.
+- **Every Vulkan environment comes from `config.profile_env()`.** Never build one
+  by hand. A/B runs are cache-clean by construction: `RADV_DEBUG=nocache` plus an
+  isolated `MESA_SHADER_CACHE_DIR`.
+- **Analyse the merged corpus, not one file.** `tcc corpus build` first;
+  `resolve_foz()` prefers it. Selection is never by mtime.
+- Launch experiments via the armed profile. Never edit Steam launch options
+  per-experiment — they are set once to the wrapper.
+- Label uncertainty. Heuristic linkage is never implied as exact.
+
+## Non-goals — hard lessons, do not relitigate
+
+- Do NOT reintroduce GFXReconstruct or hand-inject Vulkan layers into Proton
+  (32-bit pre-loader panics, VKD3D allocator collisions, pressure-vessel path
+  blocks). Use `ENABLE_VULKAN_RENDERDOC_CAPTURE=1`.
+- Do NOT parse multi-GB `RADV_DEBUG=shaders` dumps. The driver reports the stats.
+- Do NOT claim a `.foz` reconstructs scene state, or that a mined pipeline was
+  drawn, without RenderDoc evidence.
+- Do NOT resolve Steam caches by globbing `~/.local/share/Steam` — games live
+  across several libraries. Go through `steam.library_folders()`.
+- Do NOT treat every new hash in a delta as created by this run. Use
+  `run_created`.
+- Do NOT put automation state in `/tmp` for Proton games. `$HOME` only.
+- Do NOT build a keep-only-N database with `fossilize-prune --skip` — it is
+  silently wrong above ~1000 hashes.
+- Do NOT add cloud services or external databases.
 
 ## ONGOING.md protocol (mandatory)
 
-`ONGOING.md` is written **for the human to read between sessions**, not for the agent. It is
-the answer to "what were we doing, what runs next, what am I supposed to see, what's still
-unknown". Treat keeping it current as part of the task, not an optional extra.
+Written **for the human between sessions**, not for the agent. Update it after
+every prompt, before ending the turn: bump the date and branch/commit line; say
+what was just done and what it proved, with the numbers or paths that back it;
+give the single next command and what result is expected; keep "built vs missing"
+honest; delete resolved open questions rather than letting them rot.
 
-**After every prompt** — before ending the turn — update `ONGOING.md` so it reflects reality
-at that moment:
-
-- Bump the `Last updated` date and the branch/commit line.
-- **Where we stopped**: what was just done and what it proved (with the concrete numbers or
-  file paths that back it — a claim without evidence does not go in).
-- **Immediate next step**: the single next command or task, with **what result is expected
-  and why that result matters**. If it is blocked, name the blocker.
-- **Built vs missing**: keep the table honest; move rows the moment status changes, and flag
-  tested-but-uncommitted work explicitly.
-- **Open questions**: anything unverified, contradictory, or awaiting a decision — including
-  questions raised *for* the human. Delete them once answered; do not let them rot.
-- **Waiting on a human**: the checklist of things only the human can do (Steam launch
-  options, installs, downloads, purchases).
-- **Where this is going**: keep the arc paragraph accurate so every next step has a "why".
-
-Rules: no invented results — if something was not run, say "not run". Distinguish
-*implemented* from *tested on the GPU* from *committed*. Keep it under ~150 lines by deleting
-resolved items rather than appending forever; durable facts graduate to `TODO.md`
-("Standing facts") or the relevant `docs/` file. `ONGOING.md` is the *now*, `TODO.md` is the
-*plan*, `docs/` is the *method*.
-EXTRA RULES: Let it been an summary of the last 1 
-EXTRA RULES: Let it been an summary of the last 1 to 5 prompts so its more a summary checkup, STICT UNDER 150 lines, do not over extend, its to be a
-HUMAN readable summary and where to look the details.
+No invented results — if something was not run, say "not run". Distinguish
+*implemented* from *tested on the GPU* from *committed*. **Strictly under 150
+lines**: delete resolved items instead of appending. Durable facts graduate to
+`DOMAIN.md` (mechanism), `TODO.md` (plan) or the folder's `CONTEXT.md`.
 
 ## Folder CONTEXT.md protocol (mandatory)
 
-Every folder under `src/` contains a `CONTEXT.md`. It is written **for a human
-reading the code for the first time** — the author six months later, an advisor,
-an examiner. It is not agent scaffolding and not an API reference.
+Every folder under `src/` carries a `CONTEXT.md`, written **for a human reading
+the code for the first time** — the author six months later, an advisor, an
+examiner. Not agent scaffolding, not an API reference.
 
 **Intention over implementation.** Explain what the code is *for*, which decision
-it encodes, and what would break if someone changed it. Do not narrate what the
-functions do line by line — the code already says that, and a paraphrase rots the
-moment the code moves. If a sentence would still be true after deleting the
-implementation, it belongs here; if it just restates a signature, cut it.
-Prefer the *why*: why this file exists, why it is shaped this way, which
-alternative was tried and failed.
+it encodes, and what breaks if someone changes it. Never paraphrase what the
+functions do — the code says that already, and the paraphrase rots. If a sentence
+would still be true after deleting the implementation, it belongs; if it restates
+a signature, cut it.
 
-**Every CONTEXT.md ends with the same section: "Known problems, costs, and things
-I would flag".** It is not optional and it is not a formality:
+**Every file ends with "Known problems, costs, and things I would flag":** real
+defects, dead code, stale comments, costs that will bite at a stated scale, gaps
+between what a docstring claims and what the code does — and **self-notes**,
+where I was asked for approach X, complied, and it still carries a cost worth
+naming. Complying and staying quiet is the failure mode this section prevents.
 
-- Real defects, dead code, stale comments and two-sources-of-truth splits.
-- Costs that are fine now and will not be later — say at what scale they bite.
-- Gaps between what a docstring claims and what the code does.
-- **Self-notes.** When I was asked for approach X, complied, and still think it
-  carries a cost, that goes in writing, in this section, marked as such: what was
-  asked, what I built, what it costs, what the alternative was. Complying and
-  staying quiet is the failure mode this section exists to prevent.
+Every claim must be verifiable from the code as it stands; quoted numbers must
+come from a real recorded run. Delete an item when it is fixed — do not keep a
+changelog of resolved problems.
 
-Rules for that section: every claim is verifiable from the code as it stands
-today — no speculation, no "might be slow", no invented benchmarks. If a number
-is quoted, it came from a real run recorded in `ONGOING.md` or the session data.
-An item is deleted when it is fixed, not left as history.
+**Update obligation:** a change under `src/<pkg>/` updates `src/<pkg>/CONTEXT.md`
+in the *same* change. A new folder is created with its `CONTEXT.md` and gains a
+row in `src/CONTEXT.md`.
 
-**Update obligation.** A change under `src/<pkg>/` updates
-`src/<pkg>/CONTEXT.md` in the *same* change, before the turn ends — same standing
-as the `ONGOING.md` protocol above. New file, deleted file, changed intent,
-fixed defect, new known problem: all of them land in the folder's CONTEXT.md.
-A new folder under `src/` is created with its `CONTEXT.md`, and
-[src/CONTEXT.md](src/CONTEXT.md)'s table gains a row. Renaming or moving a module
-updates both the folder's file and any cross-references.
+Style follows `AGENTS.md` §9, with §10.1 in force — these are explanatory, so
+they run as long as the topic needs and use headers for skimming. English always.
 
-Style follows `AGENTS.md` §9 — no preamble, no recap, no closer — with §10.1 in
-force: these are explanatory documents, so they run as long as the topic needs
-and use headers so the reader can skim back. English, always
-(`AGENTS.md` §0.6). `AGENTS.md` §0.8 points at this file for project rules; this
-section is one of them.
+## Useful assets
 
-`ONGOING.md` is the *now*, `TODO.md` is the *plan*, `docs/` is the *method*,
-`src/**/CONTEXT.md` is the *code, explained*.
-
-## Workflow Rules
-
-- Everything is session-scoped: `tcc session new --game X --scene Y` → all artifacts land in
-  `data/sessions/<game>/<session_id>/` with manifests, sha256 provenance, and step records.
-- Launch experiments via the armed-profile pattern: `tcc arm --profile <name>` then launch;
-  never edit Steam launch options per-experiment (they are set once to the wrapper).
-- Mining is stats-first: `fossilize-replay --enable-pipeline-stats` gives per-stage
-  VGPRs/SGPRs/spills/code-size/waves **plus ACO extras (VOPD, VALU/SALU/VMEM/SMEM counts,
-  Latency, Pre-Sched pressure)** keyed by exact pipeline hash. Parse ISA text only for
-  ranked top-N offenders via `fossilize-disasm --target isa`.
-- Scene scoping via foz delta: snapshot cache before/after, delta the hash sets,
-  `fossilize-prune` a scene-scoped sub-database. Remember: foz records pipeline *creation*,
-  not draws — RenderDoc frames are the on-screen ground truth.
-- A/B comparisons (stock vs custom ACO) must always run with `RADV_DEBUG=nocache` and an
-  isolated `MESA_SHADER_CACHE_DIR` (enforced centrally in `tcc.config.profile_env`).
-- Be explicit about uncertainty; heuristic linkage must be labeled, never implied as exact.
-
-## Non-Goals / Hard Lessons
-
-- Do NOT reintroduce GFXReconstruct or hand-inject native Vulkan layers into Proton
-  (32-bit pre-loader ELF panics, VKD3D allocator collisions, Pressure Vessel path blocks).
-  Use `ENABLE_VULKAN_RENDERDOC_CAPTURE=1` — Valve ships container-paired layers.
-- Do NOT parse multi-GB `RADV_DEBUG=shaders` dumps again; the driver reports the stats.
-- Do NOT claim `.foz` reconstructs scene state or that a mined pipeline was drawn in a frame
-  without RenderDoc/manual evidence.
-- Do NOT resolve Steam caches by globbing `~/.local/share/Steam` — games live across several
-  library folders and the shadercache sits in the game's OWN library; always go through
-  `steam.library_folders()` / `steam.shadercache_foz()`. Both layouts must be handled: new
-  `fozpipelinesv6/steam_pipeline_cache.foz` (**with** the extension) and legacy
-  `steamapprun_pipeline_cache.<hex>/steamapp_pipeline_cache.foz`. The glob
-  `**/*pipeline_cache*` (files only) covers both and excludes `replay_cache.*`.
-- Do NOT treat every new hash in a foz delta as "created by this run" — Steam can download
-  its community pre-cache mid-session. Use `delta.json → run_created` (steamapprun_* only).
-- Do NOT put automation state in `/tmp` for Proton games — Pressure Vessel only reliably
-  shares `$HOME` (armed profile lives in `~/.tcc/`).
-- Do NOT add cloud services or external databases.
-
-## Useful Assets
-
-- `data/foz/remnant2/steamapp_pipeline_cache.foz` — 129MB real Remnant II cache; validated:
-  17,730 stat rows extracted under the stock local Mesa build.
-- `data/archive/` — legacy 2.1GB ISA dump + 280MB extracted samples (historical only).
-- Fossilize CLIs in `build/install/bin/`; RGA arrives as a prebuilt tarball in `tools/rga/`.
+- `data/foz/` — 22.95 GB, 18 games, sha256-verified. ⚠️ Run
+  `tcc collect --check` before uninstalling anything; as of 2026-08-03, 10 of 18
+  games held data that was not yet saved.
+- Fossilize CLIs in `build/install/bin/`. RGA arrives as a tarball in `tools/rga/`.
 - RDNA2/RDNA3 ISA reference PDFs in `pdf_context/`.

@@ -26,12 +26,13 @@ import pandas as pd
 
 from launcher import arm as arm_mod
 from core import config, util
+from core.errors import TccError
 from launcher import steam
 from shader_extractor import foz
 from core.session import Session
 
 
-class BenchError(Exception):
+class BenchError(TccError):
     pass
 
 
@@ -106,12 +107,17 @@ def parse_mangohud_csv(path: Path, pause_ms: float = PAUSE_FRAMETIME_MS) -> dict
     return summary
 
 
-def summarize(session: Session) -> Path:
-    """Parse every CSV in <session>/bench/ into bench/bench_summary.json."""
+def summarize(session: Session, only: list[Path] | None = None) -> Path:
+    """Parse MangoHud CSVs in <session>/bench/ into bench/bench_summary.json.
+
+    `only` scopes the summary to one run's files. Without it, a second bench in
+    the same session folded the previous run's frames into the same summary
+    with nothing marking which was which."""
     bench_dir = session.subdir("bench")
     # MangoHud writes a companion <name>_summary.csv next to each log; it has
     # no frametime rows, so it is metadata noise here, not a run.
-    csvs = sorted(p for p in bench_dir.glob("*.csv") if not p.name.endswith("_summary.csv"))
+    csvs = sorted(only) if only is not None else sorted(
+        p for p in bench_dir.glob("*.csv") if not p.name.endswith("_summary.csv"))
     if not csvs:
         raise BenchError(f"No CSV files in {bench_dir}; was MangoHud logging toggled during the run?")
 
@@ -258,7 +264,7 @@ def run(
                 if p.stat().st_mtime >= started_epoch - 5]
     if new_csvs:
         try:
-            out = summarize(session)
+            out = summarize(session, only=new_csvs)
             print(f"bench summary: {out}")
         except BenchError as exc:
             print(f"bench summary: {exc}")

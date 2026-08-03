@@ -7,13 +7,14 @@ mesa_stock = "build/install"
 mesa_custom = "build/install_custom"
 tools_dir = "tools"
 steam_root = "~/.local/share/Steam"
-# MUST stay under $HOME: pressure-vessel (Steam's sandbox) mounts $HOME but
-# not /tmp, so an armed profile under /tmp would be invisible to the game.
-armed_profile = "~/.tcc/armed.json"
 wrapper = "bin/tcc-launch.sh"
+# The armed profile path is NOT configurable: it is hardcoded in
+# paths.armed_profile_path() because it MUST stay under $HOME -- pressure-vessel
+# (Steam's sandbox) mounts $HOME but not /tmp, so an armed profile anywhere else
+# is invisible to the game. It used to be a key here that nothing read.
 
 [defaults]
-gpu_arch = "gfx1101"
 replay_threads = 4
 replay_timeout_s = 30
-top_n_offenders = 25
+# consumed by: nothing yet -- rga.py / isa.py (Phase 4) need it as RGA's --asic
+gpu_arch = "gfx1101"

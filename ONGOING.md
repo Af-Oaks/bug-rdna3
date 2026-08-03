@@ -3,9 +3,10 @@
 Summary of the last few sessions. **Where we are, what runs next, what to expect.**
 Details live in the linked docs — this file stays short on purpose.
 
-- **Updated:** 2026-07-28 · **Branch:** `rework` · nothing committed since `a7f0d75`
+- **Updated:** 2026-08-03 · **Branch:** `rework` · nothing committed since `281472b`
 - **Details:** [TODO.md](TODO.md) (phases) · [docs/METRICS_PLAN.md](docs/METRICS_PLAN.md)
   (Metrics 1+2) · [docs/SHADERBENCH_PLAN.md](docs/SHADERBENCH_PLAN.md) (Metric 3, corpus, ledger)
+  · **[src/CONTEXT.md](src/CONTEXT.md) — the code, explained (new)**
 
 ---
 
@@ -22,57 +23,82 @@ Three independent measurements of the same compiler change, all feeding one ledg
 **Ledger** = one row per (workload × compiler revision). Change the compiler → re-run → see
 whether a static win became a measured win, and whether it survived into the frame.
 
-## This session (2026-07-28) — corpus collection + Metric 1
+## 2026-07-28 — corpus + Metric 1 proven
 
-- **✅ CORPUS COLLECTED: 22.95 GB, 18 games, sha256-verified** → `data/foz/<slug>/`, each with a
-  `manifest.json` classifying every file `run_recorded` / `steam_precache` / `whitelist`.
+- **Corpus: 22.95 GB, 18 games, sha256-verified** → `data/foz/<slug>/` + manifests.
   Originals still in place — **awaiting your go-ahead to delete** (frees ~28.8 GB).
-  Biggest: RE6 6.5G, CS2 5.3G, Helldivers2 4.7G, Metro 2.0G, Rivals 1.1G.
-- **✅ NULL A/B PASSED.** Remnant II (13,180 pipelines) through stock and custom ICDs, **38 s
-  each**. 17,719 joined rows, **all 18 metrics zero delta**, zero divergence. strace-verified
-  that the ICDs load different binaries (`75b83d90…` vs `19ced425…`) — a genuine A/B, not a
-  silent fallback. **The custom compiler is functionally identical to stock**; the .so hash
-  difference was only RADV's baked-in install path. Metric-1 chain proven.
-- **New code**: `shader_extractor/collect.py` + `tcc collect`; `analysis/compare.py` +
-  `tcc compare` (M1-C, replaces the stub); M1-A promoted 12 ACO columns out of `extra`.
-- **`config/games/` matches reality**: 12 TOMLs created, 6 deleted (none had data).
-  `wukong-bench` pointed at uninstalled appid 3132990 → now `wukong.toml` (2358720).
-  ⚠️ `vkcube` was the wrapper smoke-test target: `git checkout HEAD -- config/games/vkcube.toml`.
-- **Replay cost**: ~350 pipelines/s → full corpus ≈ 1–6 h per driver, background-runnable.
-- Earlier claims I corrected: Cyberpunk is **not** empty (~106 MB nested); the TOML glob was
-  **not** broken (10 of 18 games simply had no TOML).
+- **✅ NULL A/B PASSED.** Remnant II 13,180 pipelines × 2 ICDs, 38 s each, 17,719 joined rows,
+  **all 18 metrics zero delta**, strace-verified as a genuine A/B. Metric-1 chain proven.
+  Replay cost ~350 pipelines/s → full corpus ≈ 1–6 h per driver.
+- New code: `collect.py` + `tcc collect`; `compare.py` + `tcc compare`; 12 ACO columns promoted.
+- ⚠️ `vkcube` was the wrapper smoke-test target: `git checkout HEAD -- config/games/vkcube.toml`.
 
-## 🔴 Finding that reframes the VOPD hypothesis (2026-07-28, Remnant II, 17,730 rows)
+## 🔴 The finding that reframes the VOPD hypothesis (Remnant II, 17,730 rows)
 
 ```
 wave64: 17,482 shaders (98.6%)  → VOPD emitted in     0 (0.0%)
 wave32:    248 shaders ( 1.4%)  → VOPD emitted in   244 (98.4%)
 ```
 
-**VOPD requires wave32. ACO picks wave64 for 98.6% of shaders — and whenever it picks wave32
-it emits VOPD almost always.** So "VOPD underuse" is not the compiler failing to find
-dual-issue pairs; it is a *wave-size selection* outcome. The real question becomes **why ACO
-chooses wave64 so overwhelmingly, and what happens to VOPD and performance if it chooses
-wave32 more often** — which is a concrete, testable compiler experiment.
+**VOPD requires wave32.** So "VOPD underuse" is not the compiler failing to find dual-issue
+pairs — it is a *wave-size selection* outcome. The real question: why does ACO choose wave64 so
+overwhelmingly, and what happens if it chooses wave32 more often? A real independent variable,
+unlike stock-vs-custom: `RADV_PERFTEST=cswave32,pswave32,gewave32` (radv_instance.c:107-112).
+**Not yet wired as a profile — it is one TOML file.**
 
-`Subgroup size` is sitting unpromoted in the `extra` JSON column — the single strongest
-covariate for VOPD, absent from both plan docs. Forcing wave32 is a real experiment with a real
-independent variable (unlike stock-vs-custom, null by construction):
-`RADV_PERFTEST=cswave32,pswave32,gewave32` (verified in radv_instance.c:107-112).
-
-**Full gap analysis → [docs/METRICS_CATALOG.md](docs/METRICS_CATALOG.md)** — 10 metrics as
-metric → why it matters → how to get it. Also verified today: `fossilize-disasm --target isa`
-works and emits NIR + ACO IR + Final Assembly with `s_delay_alu` operands decoded
-(142 of them in one sampled shader) — this closes PLAN.md §8 risk 2.
+✅ `subgroup_size` is now a promoted column (2026-08-03) and `compare.py` diffs it as
+**neutral**. ⚠️ Still **n = 1 game** — do not generalise until the corpus replay runs across
+several titles grouped by `cohort`/`api`. Gap analysis → [docs/METRICS_CATALOG.md](docs/METRICS_CATALOG.md).
 
 ## Apresentação para o orientador
 
-`Apresentacao.drawio` (PT-BR) ganhou 15 caixas novas — nada do texto original foi tocado
-(45 células preservadas, zero sobreposição). Backup: `Apresentacao.drawio.backup-*`.
-Amarelo = correção · Verde = dado medido · Azul = método · Vermelho = risco.
-Correções principais: é **SPIR-V**, não RISC-V; tirar o scoreboard custa **performance, não
-estabilidade** (não deveria crashar); a bancada é **7800 XT / gfx1101**, não a 7900 XTX;
-Fossilize grava *criação* de pipeline e o replay **recompila, não executa**.
+`Apresentacao.drawio` (PT-BR) pronto: 15 caixas novas, 45 células originais preservadas.
+Correções: é **SPIR-V**, não RISC-V; tirar o scoreboard custa **performance, não
+estabilidade**; a bancada é **7800 XT / gfx1101**; Fossilize grava *criação* de pipeline
+e o replay **recompila, não executa**.
+
+## 2026-08-03 — corpus merge, then the heavy cleanup
+
+Plan: **[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md)**. Mechanism moved into
+**[DOMAIN.md](DOMAIN.md)**; rules rewritten in **[REPOCONTEXT.md](REPOCONTEXT.md)**.
+`CODE_AUDIT.md` and `PIPELINE.md` were folded into those plus the per-folder
+`CONTEXT.md` files, and deleted.
+
+**Coverage — the correction that reordered everything.** Analysing one
+arbitrarily-chosen `.foz` ignored **52% of re6, 50% of remnant2, 42% of
+helldivers2**. `tcc corpus build` merges them all; Fossilize is content-addressed
+so a merge is a **union** (remnant2 5,035 + 5,038 → 5,038). Gains:
+**cyberpunk2077 +21.0%** (19,316 → 23,365), **kh3 +19.5%** (83,283 → 99,493).
+The `run_recorded`/`steam_precache` split is indexed *before* the merge and
+rejoined as a `provenance` column (kh3: 83,288 / 16,205 preserved).
+
+**Provenance backbone reconnected.** `run_recorded()` was written and called by
+nothing. Now `replay_stats` and `disasm` go through it — and a bug it existed to
+prevent was found by checking: `env_snapshot()` read the *parent's* `os.environ`,
+so every snapshot came out `{}`. It now snapshots the child's env. A manifest
+finally records `VK_ICD_FILENAMES=…/build/install_custom/…`, `RADV_DEBUG=nocache`,
+the isolated cache dir, and which `fossilize-*` binary resolved.
+
+**Deleted:** 15 stub subcommands (~98 lines — `--help` advertised six command
+groups that all exit 2), `paths.steam_root()`, `config.list_profiles()`,
+`armed_profile.schema.json` (described a payload nothing produced), the
+`armed_profile` and `top_n_offenders` config keys, a dead `cfg` parameter, the
+duplicated foz-filename flattener, the duplicated foz-selection heuristic, the
+hand-rolled logging in `stats.py`, `.get()` defaults defending against a
+schema-forbidden manifest version, and an unreachable `None` branch.
+
+**Fixed:** `subgroup_size` promoted · `vopd_ratio` replaces raw `vopd` ·
+`mine` groups by `(driver, stage)` · collapsed rows reported · one `TccError`
+base · schema loading cached · `collect` re-run no longer hashes 22.95 GB to
+decide it has nothing to do · `bench summarize` scoped to the current run ·
+`snapshot()` now **asserts** the invariant `run_created` depends on.
+
+**Dry run green:** 16 modules import, all files compile, 13 CLI surfaces ok,
+errors print `error:` not tracebacks, null A/B still **IDENTICAL** (17,725 rows,
+19 metrics, zero deltas, 11 collapsed each side).
+
+⚠️ **10 of 18 games still hold unsaved shader data** — `tcc collect --check`
+before uninstalling anything (re6 is missing 256 of 259 files).
 
 ## Where we stopped
 
@@ -88,38 +114,31 @@ Fossilize grava *criação* de pipeline e o replay **recompila, não executa**.
 
 ## Repo state after the 2026-07-28 cleanup
 
-```
-src/
-├── cli.py                 entry point (`tcc`)
-├── core/                  config, paths, session, provenance, util, toolchain, schemas/
-├── shader_extractor/      foz.py — capture/snapshot/delta/extract  (+ corpus.py, SB-1)
-├── analysis/              stats.py, mine.py                        (+ compare.py, isa.py)
-├── benchmark/             game_bench.py                            (+ shaderbench.py, ledger.py)
-└── launcher/              arm.py, steam.py
-```
-
-- `src/tcc/` removed → top-level packages; `_attic/`, `.github/modernize/`, `reports/`,
-  `networkx` all deleted. Recover attic formulas: `git show a7f0d75:_attic/prototypes/triage.py`.
-- Fixed while moving: `tcc doctor` globbed only `steam_root`, hiding every game on another drive.
+Layout and per-package intent now live in **[src/CONTEXT.md](src/CONTEXT.md)** and the
+six folder files it links. Attic formulas: `git show a7f0d75:_attic/prototypes/triage.py`.
 
 ## Next step
 
-**SB-0 spike `[GPU]`** — the one experiment that can invalidate Metric 3, so it comes first.
-Minimal `StateCreatorInterface` over a single-pipeline pruned foz: create one Remnant II
-compute pipeline, arena + BDA pattern fill, one dummy descriptor set, dispatch, timestamp.
+**Agreed order (your call, 2026-08-03):** ✅ collection safety → dynamic offender
+chart → audit cleanup pass → `isa.py` + crash safety.
 
-- **Expect:** same shader timed twice within 2%, **no GPU fault**. Also settles whether a
-  colon-separated `VK_ICD_FILENAMES` exposes both RADV builds in one process (→ true
-  interleaving) or whether we fall back to process-level alternation.
-- **Why first:** if a DXIL-translated shader can't run standalone without hanging the queue,
-  Metric 3 doesn't exist. Better to know from a 200-line spike than a 850-line harness.
-- Run it in a separate process with a watchdog so a queue loss doesn't take the session.
+1. **`run_recorded()` wiring (A1)** — biggest open defect: no stats table records which
+   ICD produced it. Do it before the next stats run, since it changes what gets recorded.
+2. **Dynamic offender chart** — self-contained HTML over
+   `20260803-185951_remnant2_corpus-verify` (17,736 rows, post-promotion, has
+   `subgroup_size` + `provenance`): live z-scores, adjustable weights, methodology on
+   the chart. Should still parse `extra` so older tables load.
+3. **`isa.py`** — parse Final Assembly, count instruction classes, diff A vs B, feed the
+   ledger. State plainly: static counts show what changed in the code, **not** its
+   execution cost. That needs Metric 3 or SQTT.
+4. **SB-0 spike `[GPU]`** — the experiment that can invalidate Metric 3. One compute
+   pipeline, arena + BDA fill, dispatch, timestamp. Expect the same shader timed twice
+   within 2% and no GPU fault. Separate process + watchdog so a queue loss cannot take
+   the session.
 
-**Also pending your decision:**
-1. **Delete the original shadercaches?** Everything is copied and sha256-verified; deleting
-   frees ~28.8 GB across your drives. Games recompile shaders on next launch (one-time stutter).
-2. **Run the null A/B across the full 22.95 GB corpus?** ~1–6 h per driver, background job.
-   Remnant II alone already proved the chain, so this is for coverage, not validation.
+~~**Delete the original shadercaches?**~~ **NOT SAFE — `tcc collect --check` says 10 of
+18 games hold uncollected data** (re6 is missing 256 of 259 files). Run
+`tcc collect` on the listed games first, re-check, *then* reclaim the ~28.8 GB.
 
 ## Built vs missing
 

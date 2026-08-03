@@ -81,7 +81,7 @@ def _check_writable(path: Path) -> bool:
         return False
 
 
-def _foz_cache_hits(cfg: config.TccConfig, game_cfg: config.GameConfig) -> int:
+def _foz_cache_hits(game_cfg: config.GameConfig) -> int:
     """Resolve across ALL Steam library folders, not just steam_root -- the
     shadercache lives in the library the game is installed in, and games here
     are spread over several drives. Must match what foz.snapshot() actually
@@ -173,7 +173,7 @@ def doctor() -> list[Check]:
             continue
         if game_cfg.game.appid is None or not game_cfg.foz.cache_glob:
             continue  # native-cli / non-steam titles have no Steam shadercache to check
-        hits = _foz_cache_hits(cfg, game_cfg)
+        hits = _foz_cache_hits(game_cfg)
         if hits:
             checks.append(Check(f"foz cache: {slug}", "ok", f"{hits} file(s) match cache glob"))
         else:

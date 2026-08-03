@@ -8,6 +8,7 @@ Both are validated against src/core/schemas/*.schema.json on every save().
 
 from __future__ import annotations
 
+import functools
 import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -17,6 +18,7 @@ from typing import Any
 import jsonschema
 
 from . import paths, provenance, util
+from .errors import TccError
 
 SCHEMA_VERSION = 2
 SESSION_SUBDIRS = ("logs", "foz", "stats", "isa", "isa_metrics", "captures", "bench", "reports")
@@ -25,7 +27,7 @@ _SLUG_RE = re.compile(r"[^a-z0-9]+")
 _SCHEMA_DIR = Path(__file__).resolve().parent / "schemas"
 
 
-class SessionError(Exception):
+class SessionError(TccError):
     """Base class for session lookup/validation errors."""
 
 
@@ -42,7 +44,11 @@ def slugify(value: str) -> str:
     return slug or "unnamed"
 
 
+@functools.cache
 def _load_schema(name: str) -> dict:
+    """Cached: save() validates twice and is called by record_step,
+    record_artifact, add_note, use_profile and close. Snapshotting N foz files
+    used to mean 2N schema reads and parses."""
     return util.read_json(_SCHEMA_DIR / name)
 
 
@@ -135,7 +141,9 @@ class Session:
     def _load_dir(cls, root: Path) -> "Session":
         manifest = util.read_json(root / "session.json")
         registry_path = root / "artifacts.json"
-        registry = util.read_json(registry_path) if registry_path.exists() else {"artifacts": []}
+        # save() always writes both files together, so a manifest without a
+        # registry is corruption, not an older layout worth tolerating.
+        registry = util.read_json(registry_path)
         return cls(
             root=root,
             session_id=manifest["session_id"],
@@ -143,10 +151,13 @@ class Session:
             scene=manifest["scene"],
             created_at=manifest["created_at"],
             status=manifest["status"],
-            profiles_used=manifest.get("profiles_used", []),
-            tool_resolution=manifest.get("tool_resolution", {}),
-            steps=manifest.get("steps", []),
-            notes=manifest.get("notes", []),
+            # Direct indexing: all four are `required` in the schema and
+            # save() validates on every write, so a missing key means a corrupt
+            # manifest. Failing loudly beats loading half a session's history.
+            profiles_used=manifest["profiles_used"],
+            tool_resolution=manifest["tool_resolution"],
+            steps=manifest["steps"],
+            notes=manifest["notes"],
             artifacts=registry.get("artifacts", []),
         )
 
@@ -210,6 +221,15 @@ class Session:
         self.artifacts.append(entry)
         self.save()
         return entry
+
+    def record_tool(self, name: str, path: str, origin: str) -> None:
+        """Remember which binary a tool name resolved to. Idempotent: repeated
+        calls with the same values do not rewrite the manifest."""
+        entry = {"path": path, "origin": origin}
+        if self.tool_resolution.get(name) == entry:
+            return
+        self.tool_resolution[name] = entry
+        self.save()
 
     def add_note(self, text: str) -> None:
         self.notes.append(_note_entry(text))

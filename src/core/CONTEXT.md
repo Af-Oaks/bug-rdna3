@@ -89,6 +89,14 @@ tools with a remedy line each, both Mesa ICDs, `~/.tcc` writability, the launch
 wrapper, per-game shader cache presence, and the Python dependencies. Exit code
 1 if anything is `missing`; `warn` does not fail the check.
 
+### `errors.py`
+
+One base class, `TccError`. `cli.main()` catches it once. The explicit tuple it
+replaced had to be edited from a distance and went stale twice, so two error
+types reached users as tracebacks. Anything raised for a condition the user can
+act on subclasses it; programming errors deliberately do not, because those
+should crash loudly.
+
 ### `util.py`
 
 Three functions: `ensure_dir`, `read_json`, `write_json`. It stays this small on
@@ -107,39 +115,18 @@ here grows a domain concept, it moves to the package that owns that concept.
 
 ## Known problems, costs, and things I would flag
 
-1. **Two sources of truth for paths, and one of them is dead.**
-   `paths.steam_root()` and `paths.armed_profile_path()` hardcode locations,
-   while `config.Paths` reads the *same* two keys from `tcc.toml`. Nothing calls
-   `paths.steam_root()` at all — so `$TCC_STEAM_ROOT`, documented in its
-   docstring as a testing override, has **zero effect** on anything;
-   `steam.library_folders()` reads the TOML value. Symmetrically, nothing reads
-   `cfg.paths.armed_profile` — `arm.py` uses the hardcoded
-   `paths.armed_profile_path()`. Editing `armed_profile` in `tcc.toml` silently
-   does nothing. Pick one owner per path and delete the other.
-2. **`data_dir` is split the same way.** `session.py` uses `paths.data_dir()`
-   (hardcoded `repo_root()/data`); `collect.py` uses `cfg.paths.data_dir` (from
-   TOML). Point `data_dir` at another drive and your sessions and your collected
-   `.foz` corpus land in different roots, with nothing warning you.
-3. **`session.save()` is O(everything) and gets called constantly.** Each save
-   re-reads *and re-parses both JSON Schema files from disk*, then rewrites the
-   whole manifest and the whole registry. `record_step`, `record_artifact`,
-   `add_note`, `use_profile` and `close` all call it. Snapshotting N `.foz`
-   files means N full manifest rewrites plus 2N schema loads plus N sha256
-   passes over multi-GB files. At today's scale (18 games, tens of artifacts)
-   this is invisible. It is the first thing to profile if any loop ever records
-   thousands of artifacts — the fix is a module-level schema cache and a
-   `save(defer=True)` batch mode, and neither exists yet.
-4. **`toolchain._foz_cache_hits(cfg, game_cfg)` never uses `cfg`.** Dead
-   parameter, dead argument at the call site.
-5. **`run_recorded()` always mirrors child output to the terminal.** There is no
-   quiet mode. Fine for interactive use; it means a future batch job over the
-   22.95 GB corpus will spray replay output across the console with no way to
-   suppress it short of shell redirection.
-6. **There is no test suite in this repository at all.** Not for `core`, not
-   anywhere — `find . -name "test_*.py"` outside `lib/` and `build/` returns
-   nothing. AGENTS.md §6 instructs running the full suite as a baseline before
-   starting work; there is no suite to run. Every "verified" claim in ONGOING.md
-   is a manual run someone did once and wrote down. `session.py` and
-   `config.profile_env()` are the two places where a silent regression would
-   corrupt results rather than crash, and they are exactly the two places a
-   twenty-line test file would pay for itself.
+1. **`session.save()` still rewrites both files in full on every call**, and
+   `record_step` / `record_artifact` / `add_note` / `use_profile` / `record_tool`
+   all call it. The schema parsing is now cached, so the remaining cost is the
+   JSON write — invisible at tens of artifacts, worth batching the day a loop
+   records thousands.
+2. **`data_dir` has two owners.** `session.py` uses `paths.data_dir()` (hardcoded
+   `repo_root()/data`); `collect.py` and `corpus.py` use `cfg.paths.data_dir`
+   from TOML. Point the TOML elsewhere and sessions and the foz archive land in
+   different roots with nothing warning you. One of the two should go.
+3. **`run_recorded()` always mirrors child output to the terminal.** There is no
+   quiet mode, so a background job over the 22.95 GB corpus sprays replay output
+   with no way to suppress it short of shell redirection.
+4. **`gpu_arch` in `tcc.toml` is read by nothing yet.** Kept deliberately: it is
+   what `rga.py` / `isa.py` will pass as RGA's `--asic`. The TOML comment says
+   so, so it does not read as a live control.

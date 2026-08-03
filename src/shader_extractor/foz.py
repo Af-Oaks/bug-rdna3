@@ -46,13 +46,15 @@ and a real vkd3d-proton database -- data/foz/remnant2/steamapp_pipeline_cache.fo
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-from core import config, toolchain, util
+from core import config, provenance, toolchain, util
+from core.errors import TccError
 from core.session import Session
 
 TAGS = {"modules": 4, "graphics": 6, "compute": 7, "raytracing": 9}
@@ -60,14 +62,21 @@ _PIPELINE_TAGS = {"graphics": 6, "compute": 7, "raytracing": 9}
 _FILTER_FLAGS = {"graphics": "--filter-graphics", "compute": "--filter-compute", "raytracing": "--filter-raytracing"}
 
 
-class FozError(Exception):
+class FozError(TccError):
     """Raised for fossilize tool failures or missing databases."""
 
 
-def _tool(name: str):
+def _tool(name: str, session: Session | None = None):
+    """Resolve a fossilize binary, recording WHICH one into the session.
+
+    resolve() may pick build/install/bin (local), tools/ (vendored) or PATH
+    (system) and those are different programs producing different output. A
+    result that will not reproduce is usually explained by this line."""
     info = toolchain.resolve(name)
     if info.origin == "missing":
         raise FozError(f"{name} not found (see `tcc doctor`)")
+    if session is not None:
+        session.record_tool(name, str(info.path), info.origin)
     return info.path
 
 
@@ -97,19 +106,25 @@ def snapshot(session: Session, game: str, label: str) -> list[Path]:
             "has the game been launched and played yet?"
         )
 
+    from .collect import classify, flat_name
+
     dest_dir = util.ensure_dir(session.subdir("foz") / label)
     copied = []
+    taken: set[str] = set()
     for src in matches:
-        # Legacy layout nests the .foz inside a steamapprun_...<hex>/ dir;
-        # keep that dir name in the copy so delta() can still tell
-        # run-recorded caches (steamapprun_*) from Steam's downloaded
-        # pre-cache (steamapp_pipeline_cache.foz at the top level).
-        if src.parent.name != "fozpipelinesv6":
-            dest = dest_dir / f"{src.parent.name}__{src.name}"
-        else:
-            dest = dest_dir / src.name
-        if dest.exists():  # same basename from another shard/library
-            dest = dest_dir / f"{src.parent.parent.name}__{dest.name}"
+        name = flat_name(src, taken)
+        taken.add(name)
+        dest = dest_dir / name
+        # The invariant delta()'s run_created depends on: a run-recorded source
+        # must still be identifiable as one after the copy. Losing it would not
+        # raise anywhere -- run_created would just silently become 0, which
+        # reads as "this run compiled nothing new" rather than as a bug.
+        if classify(src) == "run_recorded" and "steamapprun" not in name:
+            raise FozError(
+                f"snapshot naming lost the run-recorded marker: {src} -> {name}. "
+                "delta()'s run_created depends on 'steamapprun' surviving into the "
+                "copied filename; fix collect.flat_name() before continuing."
+            )
         shutil.copy2(src, dest)
         session.record_artifact(dest, kind=f"foz_snapshot_{label}", producer="tcc foz snapshot", confidence="exact")
         copied.append(dest)
@@ -171,12 +186,12 @@ def delta(session: Session) -> dict[str, dict[str, int]]:
     if not after_files:
         raise FozError(f"No 'after' snapshot in {after_dir}; run `tcc foz snapshot --label after` first.")
 
-    # steamapprun_* is the run-recorded cache in both layouts: a file named
-    # steamapprun_pipeline_cache.<hex>.N.foz (new) or a file inside a
-    # steamapprun_pipeline_cache.<hex>/ dir (legacy; snapshot() flattens the
-    # dir but keeps the parent name only on collision, so match the source
-    # name recorded at copy time via the filename prefix OR parent-derived
-    # prefix).
+    # steamapprun_* is the run-recorded cache in both layouts. This works
+    # ONLY because snapshot() prefixes the parent directory name whenever that
+    # parent is not "fozpipelinesv6" (and the GRANDPARENT name on collision),
+    # so the legacy layout's steamapprun_<hex>/ directory survives into the
+    # copied filename. Change that naming and run_created silently becomes 0 --
+    # which reads as a plausible result, not an error. Asserted below.
     run_files = [f for f in after_files if "steamapprun" in f.name]
 
     new_hashes: dict[str, list[str]] = {}
@@ -216,23 +231,66 @@ def classify_hashes(foz_path: Path, hashes: Iterable[str]) -> dict[str, list[str
     return buckets
 
 
-def _default_source_foz(session: Session) -> Path:
+def resolve_foz(session: Session, explicit: Path | None = None, use_corpus: bool = True) -> Path:
+    """THE rule for "which database does this command analyse".
+
+    Precedence, in order, raising rather than guessing:
+
+      1. an explicit path from the caller
+      2. data/corpus/<game>/corpus.foz -- every collected .foz for this game,
+         merged and deduplicated (see corpus.py). This is the default because
+         analysing one arbitrarily-chosen file discards up to 52% of the data
+         collected for a game.
+      3. <session>/foz/scene.foz -- a deliberately scoped subset
+      4. the single file in <session>/foz/after/
+      5. the single *.foz imported into <session>/foz/
+
+    Selection is never by mtime. The previous implementations picked "newest
+    file" (stats.py) and "single file in after/" (foz.py) independently, so the
+    same session could be analysed against different databases by two commands,
+    and re-running months later could silently select different input.
+    """
+    if explicit is not None:
+        path = Path(explicit)
+        if not path.is_file():
+            raise FozError(f"No such foz database: {path}")
+        return path
+
+    if use_corpus:
+        from . import corpus as corpus_mod
+
+        candidate = corpus_mod.corpus_foz(session.game)
+        if candidate.is_file():
+            return candidate
+
+    scene = session.subdir("foz") / "scene.foz"
+    if scene.is_file():
+        return scene
+
     after_dir = session.subdir("foz") / "after"
-    after_files = sorted(after_dir.glob("*")) if after_dir.is_dir() else []
+    after_files = sorted(p for p in after_dir.glob("*") if p.is_file()) if after_dir.is_dir() else []
     if len(after_files) == 1:
         return after_files[0]
     if len(after_files) > 1:
         raise FozError(
-            f"Multiple files in {after_dir}; pass source_foz explicitly "
-            "(merge them with fossilize-merge-db first if they are shards)."
+            f"{len(after_files)} files in {after_dir} and no corpus for "
+            f"{session.game!r}. Build one with `tcc corpus build --game "
+            f"{session.game}`, or pass an explicit path."
         )
-    imported = sorted(session.subdir("foz").glob("*.foz"), key=lambda p: p.stat().st_mtime, reverse=True)
-    if imported:
+
+    imported = sorted(p for p in session.subdir("foz").glob("*.foz") if p.is_file())
+    if len(imported) == 1:
         return imported[0]
+    if len(imported) > 1:
+        raise FozError(
+            f"{len(imported)} databases in {session.subdir('foz')} and no corpus "
+            f"for {session.game!r}; pass an explicit path or build a corpus."
+        )
+
     raise FozError(
-        f"No foz database found for session {session.session_id}. "
-        "Run `tcc foz snapshot --label after` or `tcc foz import` first, "
-        "or pass source_foz explicitly."
+        f"No foz database for session {session.session_id}. Run "
+        "`tcc foz snapshot --label after`, `tcc foz import`, or "
+        f"`tcc corpus build --game {session.game}` first."
     )
 
 
@@ -247,9 +305,11 @@ def extract(session: Session, hashes: list[str] | None = None, source_foz: Path 
     why, not --skip-the-complement), then a hard presence check via
     fossilize-list -- silent data loss would be worse than a crash here.
     """
-    source = Path(source_foz) if source_foz else _default_source_foz(session)
+    # Scene extraction scopes DOWN from one captured database, so it must not
+    # silently widen to the merged corpus: use_corpus=False.
+    source = resolve_foz(session, explicit=source_foz, use_corpus=False)
     out_path = session.subdir("foz") / "scene.foz"
-    tool = _tool("fossilize-prune")
+    tool = _tool("fossilize-prune", session)
 
     argv = [str(tool), "--input-db", str(source), "--output-db", str(out_path)]
     if hashes:
@@ -289,11 +349,11 @@ class ReplayResult:
     returncode: int
     num_rows: int
     failure_count: int
-    stdout: str
-    stderr: str
 
 
 def replay_stats(
+    session: Session,
+    step: str,
     foz_path: Path,
     out_path: Path,
     env: dict[str, str],
@@ -302,15 +362,20 @@ def replay_stats(
 ) -> ReplayResult:
     """Run fossilize-replay --enable-pipeline-stats against foz_path.
 
+    Goes through provenance.run_recorded, which tees stdout/stderr into
+    <session>/logs/<step>.*.log AND records a step carrying the VK_/RADV_/
+    MESA_ environment that was in effect. That environment snapshot is the
+    only machine-checkable record of WHICH COMPILER produced these numbers --
+    without it a stats table cannot be re-verified months later, and the ICD
+    swap is provable only by watching strace by hand.
+
     Despite the flag not naming an extension, the output is CSV (verified:
     header row starting "Database,Pipeline type,Pipeline hash,..."), one row
     per pipeline *stage* (vertex/fragment/compute/...). Individual pipeline
     failures (RT/vkd3d quirks) do not abort the run -- fossilize-replay
     skips and logs them internally; --timeout-seconds bounds each one.
     """
-    import os
-
-    tool = _tool("fossilize-replay")
+    tool = _tool("fossilize-replay", session)
     util.ensure_dir(out_path.parent)
     argv = [
         str(tool),
@@ -319,29 +384,26 @@ def replay_stats(
         "--timeout-seconds", str(timeout_s),
         str(foz_path),
     ]
-    run_env = dict(os.environ)
-    run_env.update(env)
-    # Generous outer bound: --timeout-seconds is *per pipeline*; this is a
-    # safety net against the whole process wedging, not the normal path.
-    outer_timeout = max(1800, timeout_s * 200)
-    try:
-        proc = subprocess.run(argv, env=run_env, capture_output=True, text=True, timeout=outer_timeout)
-        returncode = proc.returncode
-        stdout, stderr = proc.stdout, proc.stderr
-    except subprocess.TimeoutExpired as exc:
-        returncode = -1
-        stdout = (exc.stdout or b"").decode() if isinstance(exc.stdout, bytes) else (exc.stdout or "")
-        stderr = (exc.stderr or b"").decode() if isinstance(exc.stderr, bytes) else (exc.stderr or "")
-
-    failure_count = sum(
-        1 for line in stderr.splitlines() if "fail" in line.lower() or "timeout" in line.lower()
+    # --timeout-seconds is *per pipeline*; this outer bound is a safety net
+    # against the whole process wedging, not the normal path.
+    proc = provenance.run_recorded(
+        session, step, argv, env=env, timeout=max(1800, timeout_s * 200)
     )
+
+    stderr_log = session.subdir("logs") / f"{step.replace('/', '_').replace(' ', '_')}.stderr.log"
+    failure_count = 0
+    if stderr_log.is_file():
+        failure_count = sum(
+            1 for line in stderr_log.read_text(encoding="utf-8", errors="replace").splitlines()
+            if "fail" in line.lower() or "timeout" in line.lower()
+        )
+
     num_rows = 0
     if out_path.exists():
         with out_path.open(encoding="utf-8") as fh:
             num_rows = max(sum(1 for _ in fh) - 1, 0)  # minus header
 
-    return ReplayResult(out_path, returncode, num_rows, failure_count, stdout, stderr)
+    return ReplayResult(out_path, proc.returncode, num_rows, failure_count)
 
 
 # ---------------------------------------------------------------------------
@@ -350,6 +412,7 @@ def replay_stats(
 
 
 def disasm(
+    session: Session,
     foz_path: Path,
     pipeline_hash: str,
     pipeline_type: str,
@@ -360,12 +423,11 @@ def disasm(
     """Disassemble one pipeline via fossilize-disasm. pipeline_type must be
     one of "graphics"/"compute"/"raytracing" (see classify_hashes()).
     Returns the output file(s) written (one per shader stage)."""
-    import os
 
     if pipeline_type not in _FILTER_FLAGS:
         raise FozError(f"pipeline_type must be one of {sorted(_FILTER_FLAGS)}, got {pipeline_type!r}")
 
-    tool = _tool("fossilize-disasm")
+    tool = _tool("fossilize-disasm", session)
     util.ensure_dir(out_dir)
     argv = [
         str(tool),
@@ -374,10 +436,13 @@ def disasm(
         _FILTER_FLAGS[pipeline_type], pipeline_hash,
         "--output", str(out_dir),
     ]
-    run_env = dict(os.environ)
-    run_env.update(env)
-    proc = subprocess.run(argv, env=run_env, capture_output=True, text=True, timeout=120)
+    proc = provenance.run_recorded(
+        session, f"disasm_{pipeline_hash[:12]}", argv, env=env, timeout=120
+    )
     if proc.returncode != 0:
-        raise FozError(f"fossilize-disasm failed for {pipeline_hash}: {proc.stderr[-2000:]}")
+        raise FozError(
+            f"fossilize-disasm failed for {pipeline_hash} (returncode "
+            f"{proc.returncode}); see logs/disasm_{pipeline_hash[:12]}.stderr.log"
+        )
 
     return sorted(out_dir.glob(f"*.{pipeline_hash}.*"))

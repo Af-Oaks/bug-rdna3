@@ -32,12 +32,13 @@ import time
 from pathlib import Path
 
 from core import config
+from core.errors import TccError
 from core.config import GameConfig
 
 _VDF_PATH_RE = re.compile(r'"path"\s+"([^"]+)"')
 
 
-class SteamError(Exception):
+class SteamError(TccError):
     """Steam launch/lookup failures."""
 
 
