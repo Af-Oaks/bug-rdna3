@@ -15,9 +15,7 @@ Stack: Ubuntu 24.04, Steam/Proton, Vulkan, Mesa RADV/ACO, with a stock and a cus
 | [TODO.md](TODO.md) | phase tracker: done vs left, human-only tasks, standing facts |
 | [AGENTS.md](AGENTS.md) | working rules and hard-won constraints for anyone (human or agent) touching this repo |
 | [DOMAIN.md](DOMAIN.md) | the microarchitectural background: `s_delay_alu`, VOPD dual-issue, occupancy |
-| [docs/PLAN.md](docs/PLAN.md) | the approved repo/tooling plan (phases 0–7) |
-| [docs/METRICS_PLAN.md](docs/METRICS_PLAN.md) | Metrics 1 & 2: static compiler stats + runtime FPS, and the calibration bridge |
-| [docs/SHADERBENCH_PLAN.md](docs/SHADERBENCH_PLAN.md) | Metric 3: executing shaders extracted from game `.foz` files as a deterministic benchmark |
+| DOMAIN.md | the mechanism end to end: what a `.foz` is, the three metrics, the ledger |
 
 ## The three metrics
 

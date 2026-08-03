@@ -89,6 +89,37 @@ tools with a remedy line each, both Mesa ICDs, `~/.tcc` writability, the launch
 wrapper, per-game shader cache presence, and the Python dependencies. Exit code
 1 if anything is `missing`; `warn` does not fail the check.
 
+### `gpuguard.py` — survive a compiler change that hangs the GPU
+
+Aggressive ACO changes do not crash cleanly; they produce shaders that fault on
+a bad address, which loses the Vulkan queue and can take the desktop with it.
+Three rules, enforced here so no caller has to remember them:
+
+1. **Never run untrusted GPU work in the session manager's process.** A queue
+   loss kills whoever holds the device — if that is also the process holding the
+   session, the run's records die with it. Everything goes through a subprocess
+   with a hard timeout, SIGKILLed rather than SIGTERMed because a process wedged
+   on a lost queue is in an uninterruptible wait.
+2. **A GPU reset is a RESULT, not a failure to hide.** `status` is
+   ok / timeout / gpu_reset / crashed and never collapses to a bool.
+3. **`gpu_reset_detected` is three-valued.** `dmesg` is usually restricted, so
+   "no reset found" and "not allowed to look" must not be the same answer —
+   None means could-not-check.
+
+Proven in anger: the SB-0 spike faulted the GPU on eight consecutive Remnant II
+shaders and the desktop never noticed.
+
+### `gpuguard.py` — do not lose the machine to a bad shader
+
+Aggressive ACO changes do not crash cleanly; they hang the GPU, and a lost queue
+can take the desktop. Three rules, enforced here: untrusted GPU work runs in a
+**separate process** with a hard timeout, never in the process holding the
+session; a GPU reset is a **result** with its own status, not a failure to hide;
+and detection is honest — `gpu_reset_detected` is three-valued, because `dmesg`
+is often unreadable and "no reset found" must not be confused with "could not
+look". In practice RADV prints `GPUVM fault` to the child's stderr, which is the
+more reliable signal of the two.
+
 ### `errors.py`
 
 One base class, `TccError`. `cli.main()` catches it once. The explicit tuple it

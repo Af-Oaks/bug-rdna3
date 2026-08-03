@@ -167,10 +167,26 @@ def _union_hashes(files: Iterable[Path], tag: int) -> set[str]:
     return result
 
 
-def delta(session: Session) -> dict[str, dict[str, int]]:
+def snapshot_labels(session: Session) -> list[str]:
+    """Phase labels captured in this session, oldest first."""
+    foz_dir = session.subdir("foz")
+    if not foz_dir.is_dir():
+        return []
+    return sorted(d.name for d in foz_dir.iterdir()
+                  if d.is_dir() and any(d.iterdir()))
+
+
+def delta(session: Session, before: str = "before", after: str = "after") -> dict[str, dict[str, int]]:
     """hashes(after) - hashes(before), per tag {4: modules, 6: graphics,
-    7: compute, 9: raytracing}. Writes <session>/foz/delta.json and returns
-    {"new": per-tag counts, "run_created": per-tag counts}.
+    7: compute, 9: raytracing}. Writes <session>/foz/delta.<before>_<after>.json
+    and returns {"new": per-tag counts, "run_created": per-tag counts}.
+
+    Labels are arbitrary, not just before/after, because pipeline creation is
+    phased: three sequential runs of the same Metro EE benchmark created 63,699
+    then 2,526 then 1,178 graphics pipelines. Almost everything is compiled at
+    load, so snapshotting `menu` / `loaded` / `done` and diffing adjacent pairs
+    separates "what loading compiled" from "what the scene compiled" -- which a
+    single before/after pair cannot.
 
     "run_created" restricts the new hashes to steamapprun_* cache files --
     the ones Steam's Fossilize layer records during YOUR launches. This
@@ -179,12 +195,16 @@ def delta(session: Session) -> dict[str, dict[str, int]]:
     (observed with Metro EE: 142MB pre-cache landed mid-run), and those
     pipelines were never created by the local machine. Thesis analysis of
     "what did this run create" must use run_created, not new."""
-    before_dir = session.subdir("foz") / "before"
-    after_dir = session.subdir("foz") / "after"
-    before_files = sorted(before_dir.glob("*")) if before_dir.is_dir() else []
-    after_files = sorted(after_dir.glob("*")) if after_dir.is_dir() else []
+    before_dir = session.subdir("foz") / before
+    after_dir = session.subdir("foz") / after
+    before_files = sorted(p for p in before_dir.glob("*") if p.is_file()) if before_dir.is_dir() else []
+    after_files = sorted(p for p in after_dir.glob("*") if p.is_file()) if after_dir.is_dir() else []
     if not after_files:
-        raise FozError(f"No 'after' snapshot in {after_dir}; run `tcc foz snapshot --label after` first.")
+        known = snapshot_labels(session) or ["none"]
+        raise FozError(
+            f"No {after!r} snapshot in {after_dir}. Captured labels: {', '.join(known)}. "
+            f"Run `tcc foz snapshot --label {after}` first."
+        )
 
     # steamapprun_* is the run-recorded cache in both layouts. This works
     # ONLY because snapshot() prefixes the parent directory name whenever that
@@ -208,9 +228,13 @@ def delta(session: Session) -> dict[str, dict[str, int]]:
         counts_new[name] = len(new)
         counts_run[name] = len(run_set)
 
-    out_path = session.subdir("foz") / "delta.json"
-    util.write_json(out_path, {"new": new_hashes, "run_created": run_created})
-    session.record_artifact(out_path, kind="foz_delta", producer="tcc foz delta", confidence="exact")
+    name = "delta.json" if (before, after) == ("before", "after") else f"delta.{before}_{after}.json"
+    out_path = session.subdir("foz") / name
+    util.write_json(out_path, {"before": before, "after": after,
+                               "new": new_hashes, "run_created": run_created})
+    session.record_artifact(out_path, kind="foz_delta",
+                            producer=f"tcc foz delta --before {before} --after {after}",
+                            confidence="exact")
     return {"new": counts_new, "run_created": counts_run}
 
 

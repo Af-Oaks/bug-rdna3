@@ -59,19 +59,36 @@ The summary reports average FPS, 1% and 0.1% lows, the frametime distribution,
 and the system metadata MangoHud recorded. Proven on Metro EE: 52.8 fps average,
 37.4 / 34.3 lows, 5,810 frames over 110 seconds.
 
+## `shaderbench.py` + `ledger.py` — Metric 3 and where the metrics meet
+
+See `DOMAIN.md` § "Metric 3" for the mechanism and the SB-0 scope limit. What
+this module owns is the *orchestration*, and its shape is dictated by two ways
+the work can die:
+
+- A **GPUVM fault** destroys the Vulkan device, losing every pipeline after it.
+- **RADV aborts outright** on SPIR-V capabilities it does not implement
+  (observed: `SpvCapabilityRawAccessChainsNV`), killing the process.
+
+So work runs one process per batch under `gpuguard`, and a batch that dies is
+retried **one pipeline per process** — a single poison shader then costs one
+measurement instead of twenty-five. Every requested hash always appears in the
+output with a status, because a silently shrinking denominator looks exactly
+like an improvement.
+
+Drivers alternate **at batch granularity**, not one-driver-then-the-other: GPU
+nanoseconds drift with clock and temperature over minutes by more than the
+compiler effect being measured, so alternating makes the drift hit both sides.
+A delta is only ever claimed within one invocation.
+
 ## What this package is currently missing
 
-This is one file, and ONGOING.md calls the missing part the critical path:
-
-- **`shaderbench.py`** — Metric 3. Execute shaders pulled out of game `.foz`
-  files as a deterministic GPU workload, so compiler changes can be timed on
-  real game code without a game running. Feasibility is established (the `.foz`
-  carries SPIR-V and layouts; 15–19 layouts cover 100k+ pipelines), the
-  executor is roughly 850 lines of C++, and the SB-0 spike that could
-  invalidate the whole idea has not been run yet.
-- **`ledger.py`** — one row per (workload × compiler revision), joining all
-  three metrics. This is where "a static win became a measured win" gets
-  answered, and it is the reason the other two metrics are worth collecting.
+- **Stage 2 of the harness (graphics pipelines).** Metric 3 is compute-only, so
+  a graphics-heavy title like Metro EE (102,393 graphics / 213 compute) is
+  effectively uncovered. See [shaderlab/CONTEXT.md](../../shaderlab/CONTEXT.md).
+- **Calibration.** `ledger.py` collects the columns to regress Δstatic against
+  Δbench_ns and Δfps, but nothing regresses them yet — so "does the static
+  metric predict measured cost" remains an open question the ledger is merely
+  ready to answer.
 
 ## Ground rules a future change must not break
 

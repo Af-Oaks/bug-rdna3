@@ -1,19 +1,20 @@
 # TODO — Repo Rework Status & Remaining Work
 
 Work paused mid-rework on 2026-07-16. Branch: **`rework`**. The full approved plan is in
-[docs/PLAN.md](docs/PLAN.md) — read it before resuming. This file tracks what is DONE vs LEFT.
+DOMAIN.md — read it before resuming. This file tracks what is DONE vs LEFT.
 
 **Live context:** [ONGOING.md](ONGOING.md) — read that first; it holds the current position,
 the next command, and what result is expected.
 
-**Measurement core:** the two-metric loop (static compiler efficiency + runtime FPS, and the
-calibration bridge between them) is specified in detail in
-[docs/METRICS_PLAN.md](docs/METRICS_PLAN.md) — it expands Phase 4 (`compare.py`) and Phase 6
-(`bench.py`). Metric 2 is built and validated on Metro EE; Metric 1 needs `compare.py`.
+**All three metrics are built** (2026-08-03). The mechanism is [DOMAIN.md](DOMAIN.md);
+this file is the queue of what is left.
 
-**Metric 3 (new, 2026-07-28):** [docs/SHADERBENCH_PLAN.md](docs/SHADERBENCH_PLAN.md) — execute
-the shaders extracted from a game's `.foz` as a deterministic, game-free GPU workload, and keep
-a ledger of (workload × compiler revision). Feasibility verified; SB-0 spike is the gate.
+- **Metric 1 (static)** — `tcc stats run` / `mine` / `compare` / `isa`. Null A/B passes.
+- **Metric 2 (frame rate)** — `tcc bench run`, validated on Metro EE.
+- **Metric 3 (shaderbench)** — `tcc bench shaders`. SB-0 ran and set a scope
+  limit: **native-Vulkan titles only**; vkd3d/DX12 shaders fault when isolated
+  (0 of 8 on Remnant II). Null A/B on mechabellum: median −0.008%.
+- **Ledger** — `tcc ledger add/show`, joining all three.
 
 ## Where things stand
 

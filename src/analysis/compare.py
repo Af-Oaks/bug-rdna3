@@ -1,7 +1,7 @@
 """Metric 1 -- diff two stats tables produced by the same foz under two compilers.
 
 Both sides replay byte-identical input, so every difference is attributable to
-the compiler. See docs/METRICS_PLAN.md §2.3.
+the compiler. See DOMAIN.md § "Three measurements, one ledger".
 
 The first result that matters is the NULL verdict: stock vs custom, where the
 custom ACO overlay is still unmodified, must come out `identical`. That zero is

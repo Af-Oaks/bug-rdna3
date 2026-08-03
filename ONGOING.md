@@ -4,8 +4,8 @@ Summary of the last few sessions. **Where we are, what runs next, what to expect
 Details live in the linked docs — this file stays short on purpose.
 
 - **Updated:** 2026-08-03 · **Branch:** `rework` · nothing committed since `281472b`
-- **Details:** [TODO.md](TODO.md) (phases) · [docs/METRICS_PLAN.md](docs/METRICS_PLAN.md)
-  (Metrics 1+2) · [docs/SHADERBENCH_PLAN.md](docs/SHADERBENCH_PLAN.md) (Metric 3, corpus, ledger)
+- **Details:** [DOMAIN.md](DOMAIN.md) (mechanism) · [TODO.md](TODO.md) (queue) ·
+  [docs/METRICS_CATALOG.md](docs/METRICS_CATALOG.md)
   · **[src/CONTEXT.md](src/CONTEXT.md) — the code, explained (new)**
 
 ---
@@ -57,88 +57,77 @@ Correções: é **SPIR-V**, não RISC-V; tirar o scoreboard custa **performance,
 estabilidade**; a bancada é **7800 XT / gfx1101**; Fossilize grava *criação* de pipeline
 e o replay **recompila, não executa**.
 
-## 2026-08-03 — corpus merge, then the heavy cleanup
+## 2026-08-03 — corpus merge + heavy cleanup
 
-Plan: **[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md)**. Mechanism moved into
-**[DOMAIN.md](DOMAIN.md)**; rules rewritten in **[REPOCONTEXT.md](REPOCONTEXT.md)**.
-`CODE_AUDIT.md` and `PIPELINE.md` were folded into those plus the per-folder
-`CONTEXT.md` files, and deleted.
+Merging every `.foz` per game recovered coverage a single-file replay threw away
+(**re6 52%, remnant2 50%, helldivers2 42%**); gains **cyberpunk2077 +21.0%**,
+**kh3 +19.5%**. `run_recorded`/`steam_precache` is indexed before the merge and
+rejoined as a `provenance` column.
 
-**Coverage — the correction that reordered everything.** Analysing one
-arbitrarily-chosen `.foz` ignored **52% of re6, 50% of remnant2, 42% of
-helldivers2**. `tcc corpus build` merges them all; Fossilize is content-addressed
-so a merge is a **union** (remnant2 5,035 + 5,038 → 5,038). Gains:
-**cyberpunk2077 +21.0%** (19,316 → 23,365), **kh3 +19.5%** (83,283 → 99,493).
-The `run_recorded`/`steam_precache` split is indexed *before* the merge and
-rejoined as a `provenance` column (kh3: 83,288 / 16,205 preserved).
+`run_recorded()` was written and called by nothing — now wired, and a bug it
+existed to prevent surfaced on inspection: `env_snapshot()` read the *parent's*
+environment, so every snapshot was `{}`. Manifests now record
+`VK_ICD_FILENAMES`, `RADV_DEBUG` and which `fossilize-*` binary resolved.
 
-**Provenance backbone reconnected.** `run_recorded()` was written and called by
-nothing. Now `replay_stats` and `disasm` go through it — and a bug it existed to
-prevent was found by checking: `env_snapshot()` read the *parent's* `os.environ`,
-so every snapshot came out `{}`. It now snapshots the child's env. A manifest
-finally records `VK_ICD_FILENAMES=…/build/install_custom/…`, `RADV_DEBUG=nocache`,
-the isolated cache dir, and which `fossilize-*` binary resolved.
-
-**Deleted:** 15 stub subcommands (~98 lines — `--help` advertised six command
-groups that all exit 2), `paths.steam_root()`, `config.list_profiles()`,
-`armed_profile.schema.json` (described a payload nothing produced), the
-`armed_profile` and `top_n_offenders` config keys, a dead `cfg` parameter, the
-duplicated foz-filename flattener, the duplicated foz-selection heuristic, the
-hand-rolled logging in `stats.py`, `.get()` defaults defending against a
-schema-forbidden manifest version, and an unreachable `None` branch.
-
-**Fixed:** `subgroup_size` promoted · `vopd_ratio` replaces raw `vopd` ·
-`mine` groups by `(driver, stage)` · collapsed rows reported · one `TccError`
-base · schema loading cached · `collect` re-run no longer hashes 22.95 GB to
-decide it has nothing to do · `bench summarize` scoped to the current run ·
-`snapshot()` now **asserts** the invariant `run_created` depends on.
-
-**Dry run green:** 16 modules import, all files compile, 13 CLI surfaces ok,
-errors print `error:` not tracebacks, null A/B still **IDENTICAL** (17,725 rows,
-19 metrics, zero deltas, 11 collapsed each side).
+Deleted: 15 stub subcommands, `paths.steam_root()`, `config.list_profiles()`,
+`armed_profile.schema.json`, two dead config keys, two duplicated
+implementations, and `.get()` defaults guarding a schema-forbidden version.
+Fixed: `subgroup_size` promoted · `vopd_ratio` replaces raw `vopd` · `mine`
+groups by `(driver, stage)` · collapsed rows reported · one `TccError` base.
 
 ⚠️ **10 of 18 games still hold unsaved shader data** — `tcc collect --check`
 before uninstalling anything (re6 is missing 256 of 259 files).
 
-## Where we stopped
+## 2026-08-03 (late) — R3/R4/R5/R6 + Metric 3 built and run
 
-- **Metric 2 proven** on Metro EE (session `20260724-101611`): 52.8 fps avg, 1%/0.1% low
-  37.4/34.3, 5810 frames/110 s, 281 MB foz captured. Whole armed-launch chain works in Proton.
-- **Pause-frame parser fix**: `autostart_log=1` logs menus as multi-minute "frames"; >200 ms
-  now dropped and counted.
-- **Metric 3 verified feasible**: foz carries SPIR-V + layouts (only 15–19 layouts cover 100k+
-  pipelines); `libfossilize.a` already built, so the harness reads create-infos from the
-  replayer API. Only new code is the executor (~850 lines C++). Hazards: raw GPU pointers
-  (arena + pattern fill) and bindless indexing (robustness2). See SHADERBENCH_PLAN.md.
-- **Repetition policy set**: L1 median of 200 → L2 drop-worst-of-4 mean → L3 interleave A/B.
+- **`tcc chart`** — self-contained HTML over the stats table. Weights, scoring
+  terms and grouping are all client-side, so re-scoring never needs another
+  replay. Verified: identical top-3 to `mine.py` to 4 decimals.
+- **`analysis/isa.py` + `tcc isa`** — parses the Final Assembly section only,
+  counts instruction classes, decodes `s_delay_alu` operands, diffs A vs B.
+  Verified against grep: **142 `s_delay_alu` in 3,314 instructions = 12.85%
+  stall ratio** on a real Remnant II compute shader.
+- **`core/gpuguard.py`** — separate process, hard timeout, GPU-reset detection.
+  Earned its keep immediately (below).
+- **`tcc foz snapshot --label <anything>`** + `delta --before/--after` — phase
+  bracketing, since creation collapses 63,699 → 2,526 → 1,178 across three runs.
 
-## Repo state after the 2026-07-28 cleanup
+### 🔴 SB-0 ran, and returned a scope limit
 
-Layout and per-package intent now live in **[src/CONTEXT.md](src/CONTEXT.md)** and the
-six folder files it links. Attic formulas: `git show a7f0d75:_attic/prototypes/triage.py`.
+| title | API | ran | outcome |
+|---|---|---:|---|
+| Remnant II | vkd3d (DX12) | **0 of 8** | GPUVM fault `0x800044800000` |
+| mechabellum | native Vulkan | **4 of 6** | cv 0.098–0.263% |
+
+The arena pointer-fill cannot work for translated D3D12: those shaders read
+pointers **and** their offsets from the same buffers, so one fill pattern cannot
+make both valid. **Metric 3 covers native-Vulkan titles**; DX12 stays on M1+M2.
+Worth stating in the thesis rather than hiding. The desktop never noticed any of
+the eight faults — gpuguard did its job.
+
+Also found: Remnant II's descriptor layout has **one binding with
+`descriptorCount = 1,000,000`** (`MUTABLE_EXT`, the D3D12 heap) → pools are now
+created per layout, sized from that layout's own bindings.
+
+### ✅ Metric 3 null A/B passed
+
+`tcc bench shaders --game mechabellum --compilers stock,custom`:
+**6 stable shaders, mean −0.186%, median −0.008%** — zero, as it must be while
+the custom compiler is byte-identical. Coverage reported honestly
+(6 ok / 4 batch_died / 2 batch_faulted). `tcc ledger add|show` writes the row.
+
+**Docs:** `docs/` pruned to `THESIS_NOTES.md` + `METRICS_CATALOG.md`; the plans
+were folded into [DOMAIN.md](DOMAIN.md). New [shaderlab/CONTEXT.md](shaderlab/CONTEXT.md).
 
 ## Next step
 
-**Agreed order (your call, 2026-08-03):** ✅ collection safety → dynamic offender
-chart → audit cleanup pass → `isa.py` + crash safety.
-
-1. **`run_recorded()` wiring (A1)** — biggest open defect: no stats table records which
-   ICD produced it. Do it before the next stats run, since it changes what gets recorded.
-2. **Dynamic offender chart** — self-contained HTML over
-   `20260803-185951_remnant2_corpus-verify` (17,736 rows, post-promotion, has
-   `subgroup_size` + `provenance`): live z-scores, adjustable weights, methodology on
-   the chart. Should still parse `extra` so older tables load.
-3. **`isa.py`** — parse Final Assembly, count instruction classes, diff A vs B, feed the
-   ledger. State plainly: static counts show what changed in the code, **not** its
-   execution cost. That needs Metric 3 or SQTT.
-4. **SB-0 spike `[GPU]`** — the experiment that can invalidate Metric 3. One compute
-   pipeline, arena + BDA fill, dispatch, timestamp. Expect the same shader timed twice
-   within 2% and no GPU fault. Separate process + watchdog so a queue loss cannot take
-   the session.
-
-~~**Delete the original shadercaches?**~~ **NOT SAFE — `tcc collect --check` says 10 of
-18 games hold uncollected data** (re6 is missing 256 of 259 files). Run
-`tcc collect` on the listed games first, re-check, *then* reclaim the ~28.8 GB.
+1. **Run `tcc collect`** on the 10 games holding unsaved data — the only
+   irreversible item on the board. `tcc collect --check` lists them.
+2. **Wire `RADV_PERFTEST=cswave32,pswave32,gewave32` as a profile** — one TOML
+   file, and the first experiment with a real independent variable.
+3. **Corpus-wide VOPD correlation** grouped by `cohort`/`api`, to move the
+   wave32 finding off n = 1.
+4. **Harness Stage 2 (graphics)** if Metro EE needs to be covered at all.
 
 ## Built vs missing
 

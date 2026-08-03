@@ -1,7 +1,7 @@
 # Metrics Catalog — what to measure, why it matters, and exactly how to get it
 
-Companion to [METRICS_PLAN.md](METRICS_PLAN.md) (Metrics 1 & 2) and
-[SHADERBENCH_PLAN.md](SHADERBENCH_PLAN.md) (Metric 3). Those two say *how the measurement loop
+Companion to [DOMAIN.md](../DOMAIN.md), which absorbed the metric plans in the
+2026-08-03 cleanup. That file says *how the measurement loop
 is built*; this says *which numbers go into it and where each one comes from*.
 
 Every entry follows the same rule:
@@ -278,7 +278,7 @@ Doing neither leaves the thesis correlating against labels nobody can defend.
 Aggregated: total corpus compile time, p99 per-pipeline compile time, and the stock-vs-custom
 delta.
 
-**Why it matters.** METRICS_PLAN calls this a "bonus axis" and never defines it — while the
+**Why it matters.** The metric plans called this a "bonus axis" and never defined it — while the
 three columns are **already sitting in every row you have collected**, unused. Compilation cost
 drives traversal hitching and shader-comp stutter, a genuine RDNA3-era complaint that
 steady-state FPS completely hides. It is also a direct compiler-quality axis in its own right: a
@@ -306,11 +306,11 @@ shader timed at intervals throughout every run.
 per-invocation cost with dispatch overhead. A compiler change that improves the shader *body*
 looks diluted by a constant, and worse, the dilution differs per shader — so the ranking of
 "which shaders improved" is distorted. Two points separate the two effects for roughly double
-the runtime. The canary is independent insurance: the §"drift tripwire" in SHADERBENCH_PLAN
+the runtime. The canary is independent insurance: the drift tripwire in DOMAIN.md § Metric 3
 catches drift *between* runs, but nothing currently catches a thermal event *during* a run.
 
 **How we get it.**
-1. Run each pipeline at budget `N` and `4N` (SHADERBENCH_PLAN §3.2 already fixes an invocation
+1. Run each pipeline at budget `N` and `4N` (the harness already fixes an invocation
    budget; add a second multiplier).
 2. `slope = (t_4N − t_N) / (3N)`, `intercept = t_N − slope·N`. Report both; use **slope** as the
    compiler-quality signal and watch intercept as a validity check — it should be roughly

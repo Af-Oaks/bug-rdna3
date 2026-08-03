@@ -17,6 +17,7 @@ import read `tcc.tcc.something` and told you nothing about what the module did.
 | `analysis/` | turning compiler output into numbers you can defend (Metric 1) | [analysis/CONTEXT.md](analysis/CONTEXT.md) |
 | `benchmark/` | what the player actually sees (Metric 2), later Metric 3 | [benchmark/CONTEXT.md](benchmark/CONTEXT.md) |
 | `launcher/` | forcing a chosen driver into a game you do not control | [launcher/CONTEXT.md](launcher/CONTEXT.md) |
+| `../shaderlab/harness/` | the Metric 3 C++ executor (outside `src/`, built by `build.sh`) | [../shaderlab/CONTEXT.md](../shaderlab/CONTEXT.md) |
 | `core/schemas/` | the written-down shape of files that outlive a session | [core/schemas/CONTEXT.md](core/schemas/CONTEXT.md) |
 
 A new module goes in the package that owns its concept. If it does not fit any

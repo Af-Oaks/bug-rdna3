@@ -29,7 +29,7 @@ compiler, re-run, read across: did a static win become a GPU win, and did it
 survive into the frame? A static win with no frame win is still a finding — it
 says the metric you optimised was not the bottleneck.
 
-M1 and M2 work. M3 is designed, not built (`docs/SHADERBENCH_PLAN.md`).
+All three are built. M3's scope is limited by a measured result — see below.
 
 ## What a `.foz` is
 
@@ -128,7 +128,7 @@ From `fossilize-replay --enable-pipeline-stats`, all first-class columns:
   `vopd`** — it rises when a shader merely gets bigger.
 - `provenance` — `run_recorded` / `steam_precache`, joined from the corpus index.
 
-From `fossilize-disasm --target isa` (top-N offenders only; `isa.py` not written):
+From `fossilize-disasm --target isa`, parsed by `analysis/isa.py` (top-N offenders only):
 
 - Three sections per file: NIR, ACO IR, and **Final Assembly** — the real RDNA3
   ISA with `s_`/`v_` mnemonics.
@@ -140,9 +140,82 @@ Runtime: MangoHud frametime CSVs (avg fps, 1%/0.1% lows). Frames slower than
 200 ms are dropped as pauses — `autostart_log` records menus and load screens as
 single multi-minute "frames", and one 57-minute frame poisons every mean.
 
+## Metric 3 — shaderbench, and the scope limit SB-0 found
+
+`shaderlab/harness/tcc-shaderbench` replays a corpus through Fossilize's
+`StateCreatorInterface`, creates the real Vulkan objects, then supplies
+everything the `.foz` never recorded — dummy descriptors, an arena buffer whose
+device address is pattern-filled into every uniform slot, zeroed push constants
+— and dispatches each compute shader with a fixed invocation budget, timed with
+GPU timestamp queries.
+
+**The SB-0 spike, run 2026-08-03, produced a negative result that defines the
+metric's scope:**
+
+| title | API | ran | outcome |
+|---|---|---:|---|
+| Remnant II | vkd3d-proton (DX12) | **0 of 8** | GPUVM fault, e.g. `0x800044800000`, `CLIENT_ID SQC (data)` |
+| mechabellum | native Vulkan | **4 of 6** | cv 0.098%–0.263% |
+
+The arena pointer-fill mitigation is **not sufficient for translated D3D12
+shaders**, and the reason is structural rather than a bug: those shaders read
+raw 64-bit pointers out of constant buffers *and read their offsets from the
+same buffers*. Filling every 8-byte word with the arena address makes the
+pointer valid and the offset enormous, so `base + huge` lands outside the
+allocation. Nothing distinguishes a pointer word from an index word, so no
+single fill pattern satisfies both.
+
+**Metric 3 therefore covers native-Vulkan titles. DX12 titles stay covered by
+Metric 1 and Metric 2.** That is a finding worth stating in the thesis: a
+translated D3D12 shader cannot be isolated from its descriptor heap.
+
+Two further failure modes are recorded rather than hidden. RADV aborts outright
+on SPIR-V capabilities it does not implement (`SpvCapabilityRawAccessChainsNV`),
+which kills the whole batch process; and a GPU fault destroys the device, losing
+every pipeline after it. So work runs **one process per batch** under
+`core.gpuguard`, and a batch that dies is retried **one pipeline per process**
+so a single poison shader costs one measurement instead of twenty-five. Every
+hash always appears in the output with a status — `ok`, `unstable`,
+`create_failed`, `no_dispatch`, `faulted`, `batch_died` — because a shrinking
+denominator would otherwise look like an improvement.
+
+Timing: L1 = median of N dispatches inside one timed batch; L2 = drop the
+slowest repetition, mean the rest; drivers alternate **at batch granularity**
+so thermal drift and clock ramp hit both sides and cancel. The trim is
+one-sided, so it biases an *absolute* number optimistically and cancels only in
+a delta — never quote a trimmed mean as "this shader costs X ns".
+
+**Null A/B passed:** stock vs custom on mechabellum, 6 stable shaders,
+mean −0.186%, median −0.008% — zero within noise, as it must be while the
+custom overlay is byte-identical.
+
+## The ledger
+
+`data/ledger/ledger.csv`, one row per (workload × compiler revision), joining
+all three metrics. `compiler_rev` is the git revision of `custom_mesa_layer/`,
+so it changes exactly when the compiler does.
+
+Read across a row:
+
+- static win + GPU win + frame win → a real improvement, fully traced
+- static win + no GPU win → the metric you optimised was not the cost
+- static + GPU win + no frame win → the shader is not hot enough to matter
+
+All three are publishable; the third is what a single metric would have called
+a success. The matrix is sparse by design — a shader from a new game has no
+history before its first run, and every comparison is a per-shader, within-run
+pair, never an average across time.
+
 ## The hypotheses, and where they stand
 
-- **`s_delay_alu` cost** — needs `isa.py`. Not measured yet.
+- **`s_delay_alu` cost** — `analysis/isa.py` parses the Final Assembly section
+  of `fossilize-disasm --target isa` and counts instruction classes. Verified on
+  a real Remnant II compute shader: 142 `s_delay_alu`, matching an independent
+  grep exactly, with the wait distance decoded (`VALU_DEP_1` ×86, `VALU_DEP_2`
+  ×63, `VALU_DEP_3` ×20, `VALU_DEP_4` ×36, `SALU_CYCLE_1` ×28). That shader
+  spends **12.85% of its instruction stream on pure waits**
+  (`s_delay_alu` + `s_waitcnt` + `s_nop`). **A count is not a cost** — a wait on
+  a path already stalled on memory is free. Connecting the two needs Metric 3.
 - **VOPD underuse** — reframed by measurement. VOPD requires wave32; ACO picks
   wave64 for 98.6% of remnant2's shaders and emits VOPD in 244 of the 248 wave32
   ones. So it is a **wave-size selection** outcome, not a failure to find

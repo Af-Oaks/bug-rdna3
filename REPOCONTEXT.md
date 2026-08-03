@@ -13,21 +13,26 @@ gen-over-gen gains. Target: RX 7800 XT, Navi 32, **gfx1101**.
 2. **[DOMAIN.md](DOMAIN.md)** — what a `.foz` is, why replay recompiles, what the
    columns mean, what the hypotheses are and where they stand.
 3. **[src/CONTEXT.md](src/CONTEXT.md)** — the code, explained per folder.
-4. **[TODO.md](TODO.md)** / **[docs/REFACTOR_PLAN.md](docs/REFACTOR_PLAN.md)** — the plan.
+4. **[TODO.md](TODO.md)** — the queue. Method lives in `docs/`:
+   [THESIS_NOTES.md](docs/THESIS_NOTES.md) and
+   [METRICS_CATALOG.md](docs/METRICS_CATALOG.md).
 
 ## Layout
 
 - `src/` — contextual top-level packages, no umbrella package. Entry point
   `tcc` is `src/cli.py`, installed in `build/venv`, run as `./build/venv/bin/tcc`.
-  - `core/` — config, paths, session, provenance, errors, toolchain, `schemas/`
+  - `core/` — config, paths, session, provenance, errors, gpuguard, toolchain, `schemas/`
   - `shader_extractor/` — `foz.py`, `collect.py`, `corpus.py`
-  - `analysis/` — `stats.py`, `mine.py`, `compare.py` (later `isa.py`)
-  - `benchmark/` — `game_bench.py` (later `shaderbench.py`, `ledger.py`)
+  - `analysis/` — `stats.py`, `mine.py`, `compare.py`, `isa.py`, `chart.py`
+  - `benchmark/` — `game_bench.py`, `shaderbench.py`, `ledger.py`
   - `launcher/` — `arm.py`, `steam.py`
 - `config/` — `tcc.toml`, `games/*.toml` (the matrix), `profiles/*.toml`.
 - `bin/tcc-launch.sh` — the Steam `%command%` wrapper.
 - `data/` — gitignored: `sessions/`, `foz/` (verified archive), `corpus/` (merged).
 - `custom_mesa_layer/` + `scripts/build_custom_aco.sh` — the ACO experiment area.
+- `shaderlab/` — the C++ GPU harness (Metric 3). Carries its own `CONTEXT.md`
+  under the same protocol as the `src/` packages.
+- `shaderlab/harness/` — the Metric 3 C++ executor; `build.sh` is one `g++` call.
 
 New modules go in the package that owns the concept. Do not create an umbrella
 package.
@@ -47,7 +52,7 @@ package.
   exists elsewhere — filename flattening, foz selection, environment building.
 - **Every user-facing error subclasses `core.errors.TccError`.** Programming
   errors must not: those should crash with a traceback.
-- **No stubs.** Planned commands live in `docs/`, not in argparse. Fifteen stub
+- **No stubs.** Planned work lives in `TODO.md`, not in argparse. Fifteen stub
   parsers were deleted 2026-08-03 because `--help` advertising six command groups
   that all exit 2 is worse than a short help listing.
 
@@ -84,6 +89,10 @@ package.
 - Do NOT build a keep-only-N database with `fossilize-prune --skip` — it is
   silently wrong above ~1000 hashes.
 - Do NOT add cloud services or external databases.
+- Do NOT run untrusted GPU work in-process. A GPUVM fault destroys the device
+  and takes every later pipeline with it — go through `core.gpuguard`.
+- Do NOT expect Metric 3 to cover vkd3d/DX12 titles. Their shaders read raw
+  pointers out of descriptor heaps and fault when isolated (measured 0/8).
 
 ## ONGOING.md protocol (mandatory)
 

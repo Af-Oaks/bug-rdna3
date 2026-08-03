@@ -23,11 +23,15 @@ from core import __version__
 from core.errors import TccError
 from launcher import arm as arm_mod
 from benchmark import game_bench as bench_mod
+from benchmark import ledger as ledger_mod
+from benchmark import shaderbench as sb_mod
 from core import config as config_mod
 from shader_extractor import collect as collect_mod
 from shader_extractor import corpus as corpus_mod
 from shader_extractor import foz as foz_mod
+from analysis import chart as chart_mod
 from analysis import compare as compare_mod
+from analysis import isa as isa_mod
 from analysis import mine as mine_mod
 from core import session as session_mod
 from analysis import stats as stats_mod
@@ -149,7 +153,7 @@ def cmd_foz_snapshot(args: argparse.Namespace) -> int:
 
 def cmd_foz_delta(args: argparse.Namespace) -> int:
     session = session_mod.Session.load(args.session)
-    counts = foz_mod.delta(session)
+    counts = foz_mod.delta(session, before=args.before, after=args.after)
     if args.json:
         print(json.dumps(counts, indent=2))
     else:
@@ -205,11 +209,14 @@ def _add_foz_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentPa
 
     p = foz_sub.add_parser("snapshot", parents=[common])
     p.add_argument("--session", required=True)
-    p.add_argument("--label", choices=["before", "after"], required=True)
+    p.add_argument("--label", required=True,
+                   help="phase name: before/after, or menu/loaded/done for phased capture")
     p.set_defaults(func=cmd_foz_snapshot)
 
     p = foz_sub.add_parser("delta", parents=[common])
     p.add_argument("--session", required=True)
+    p.add_argument("--before", default="before", help="earlier phase label")
+    p.add_argument("--after", default="after", help="later phase label")
     p.set_defaults(func=cmd_foz_delta)
 
     p = foz_sub.add_parser("extract", parents=[common])
@@ -540,9 +547,152 @@ def _add_bench_parser(sub: argparse._SubParsersAction, common: argparse.Argument
     p.add_argument("--no-foz", action="store_true", help="skip foz before/after snapshots")
     p.set_defaults(func=cmd_bench_run)
 
+    p = bench_sub.add_parser("shaders", parents=[common],
+                             help="Metric 3: run the corpus as a GPU workload (native-Vulkan titles)")
+    p.add_argument("--session", required=True)
+    p.add_argument("--game", required=True)
+    p.add_argument("--compilers", default="stock,custom", help="comma-separated driver labels")
+    p.add_argument("--top", type=int, default=None, help="limit to N pipelines")
+    p.add_argument("--warmup", type=int, default=50)
+    p.add_argument("--iterations", type=int, default=200)
+    p.add_argument("--repetitions", type=int, default=4)
+    p.add_argument("--invocations", type=int, default=1 << 20)
+    p.add_argument("--arena-mb", type=int, default=256)
+    p.add_argument("--batch", type=int, default=25,
+                   help="pipelines per process; a GPU fault costs one batch, not the run")
+    p.set_defaults(func=cmd_bench_shaders)
+
     p = bench_sub.add_parser("summarize", parents=[common])
     p.add_argument("--session", required=True)
     p.set_defaults(func=cmd_bench_summarize)
+
+
+def cmd_isa_extract(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    if args.hash:
+        hashes = list(args.hash)
+    else:
+        top = mine_mod.rank(session, driver=args.driver, top=args.top, rank_by="score")
+        hashes = list(dict.fromkeys(top["pipeline_hash"].astype(str)))
+    print(f"disassembling {len(hashes)} shader(s) under {args.driver}...")
+    print(isa_mod.extract(session, args.driver, hashes))
+    return 0
+
+
+def cmd_isa_metrics(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    rows = isa_mod.parse_dir(session.subdir("isa") / args.driver)
+    summary = isa_mod.summarize(rows)
+    if args.json:
+        print(json.dumps(summary, indent=2))
+    else:
+        for k, v in summary.items():
+            print(f"{k:24} {v}")
+    return 0
+
+
+def cmd_isa_diff(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    out = isa_mod.diff_dirs(session, args.a, args.b)
+    payload = json.loads(Path(out).read_text(encoding="utf-8"))
+    print(f"compared {payload['shaders_compared']} shader(s); "
+          f"{payload['shaders_changed']} changed instruction mix")
+    print(f"⚠️  {payload['caveat']}")
+    print(out)
+    return 0
+
+
+def cmd_chart(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    out = chart_mod.generate(session, driver=args.driver)
+    print(out)
+    print("open it in a browser: weights, terms and grouping are all client-side, "
+          "so re-scoring never needs another replay.")
+    return 0
+
+
+def cmd_bench_shaders(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    opts = sb_mod.BenchOptions(
+        warmup=args.warmup, iterations=args.iterations, repetitions=args.repetitions,
+        invocations=args.invocations, arena_mb=args.arena_mb, batch=args.batch)
+    out = sb_mod.run(session, args.game, args.compilers.split(","), opts, top=args.top)
+    payload = json.loads(Path(out).read_text(encoding="utf-8"))
+    for d, info in payload["drivers"].items():
+        print(f"{d:8} coverage={info['coverage']} batches_faulted={info['batches_faulted']}")
+    if payload["deltas"]:
+        pcts = [x["delta_pct"] for x in payload["deltas"]]
+        print(f"delta over {len(pcts)} stable shader(s): "
+              f"mean {sum(pcts)/len(pcts):+.3f}%  median {sorted(pcts)[len(pcts)//2]:+.3f}%")
+    else:
+        print("no stable shader ran under every driver — see coverage above")
+    print(f"⚠️  {payload['caveat']}")
+    print(out)
+    return 0
+
+
+def cmd_ledger_add(args: argparse.Namespace) -> int:
+    session = session_mod.Session.load(args.session)
+    stats_dir = session.subdir("stats")
+    cmp_json = next(iter(sorted(stats_dir.glob("compare.*.json"))), None)
+    sb_json = session.subdir("bench") / f"shaderbench.{args.game}.json"
+    bench_json = session.subdir("bench") / "bench_summary.json"
+    row = ledger_mod.build_row(session, args.game, compare_json=cmp_json,
+                               shaderbench_json=sb_json, bench_summary=bench_json,
+                               notes=args.note or "")
+    print(ledger_mod.append(row))
+    return 0
+
+
+def cmd_ledger_show(args: argparse.Namespace) -> int:
+    rows = ledger_mod.load()
+    print(json.dumps(rows, indent=2) if args.json else ledger_mod.render(rows))
+    return 0
+
+
+def _add_ledger_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
+    p_l = sub.add_parser("ledger", parents=[common],
+                         help="one row per (workload, compiler revision)")
+    ls = p_l.add_subparsers(dest="ledger_action", required=True)
+    p = ls.add_parser("add", parents=[common])
+    p.add_argument("--session", required=True)
+    p.add_argument("--game", required=True)
+    p.add_argument("--note", default=None)
+    p.set_defaults(func=cmd_ledger_add)
+    p = ls.add_parser("show", parents=[common])
+    p.set_defaults(func=cmd_ledger_show)
+
+
+def _add_chart_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
+    p = sub.add_parser("chart", parents=[common],
+                       help="self-contained offender chart with live re-scoring")
+    p.add_argument("--session", required=True)
+    p.add_argument("--driver", default=None, help="one driver, or omit for all")
+    p.set_defaults(func=cmd_chart)
+
+
+def _add_isa_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
+    p_isa = sub.add_parser("isa", parents=[common],
+                           help="disassemble shaders and count instruction classes")
+    isa_sub = p_isa.add_subparsers(dest="isa_action", required=True)
+
+    p = isa_sub.add_parser("extract", parents=[common])
+    p.add_argument("--session", required=True)
+    p.add_argument("--driver", required=True, choices=["system", "stock", "custom"])
+    p.add_argument("--hash", action="append", default=None, help="explicit hash (repeatable)")
+    p.add_argument("--top", type=int, default=25, help="or: top N by offender score")
+    p.set_defaults(func=cmd_isa_extract)
+
+    p = isa_sub.add_parser("metrics", parents=[common])
+    p.add_argument("--session", required=True)
+    p.add_argument("--driver", required=True)
+    p.set_defaults(func=cmd_isa_metrics)
+
+    p = isa_sub.add_parser("diff", parents=[common])
+    p.add_argument("--session", required=True)
+    p.add_argument("--a", required=True)
+    p.add_argument("--b", required=True)
+    p.set_defaults(func=cmd_isa_diff)
 
 
 def _add_compare_parser(sub: argparse._SubParsersAction, common: argparse.ArgumentParser) -> None:
@@ -573,6 +723,9 @@ def build_parser() -> argparse.ArgumentParser:
     _add_corpus_parser(sub, common)
     _add_arm_launch_parsers(sub, common)
     _add_bench_parser(sub, common)
+    _add_ledger_parser(sub, common)
+    _add_chart_parser(sub, common)
+    _add_isa_parser(sub, common)
     _add_compare_parser(sub, common)
     return parser
 
