@@ -60,7 +60,11 @@
       "Bash(tee /tmp/claude-1000/-home-methos-Documents-faculdade-TCC-bug-amd/f122d6f9-27fa-4ffd-bee8-c7ae2c85e311/scratchpad/collect.log)",
       "Bash(break)",
       "Bash(read -t 20 x)",
-      "Bash(./build/venv/bin/python3 -m py_compile src/analysis/compare.py src/shader_extractor/collect.py src/cli.py src/analysis/stats.py)"
+      "Bash(./build/venv/bin/python3 -m py_compile src/analysis/compare.py src/shader_extractor/collect.py src/cli.py src/analysis/stats.py)",
+      "Bash(git -C lib/mesa status --short)",
+      "Bash(git -C lib/mesa status --porcelain)",
+      "Bash(cd /home/methos/Documents/faculdade/TCC_bug_amd *)",
+      "Read(//home/methos/Documents/faculdade/**)"
     ]
   }
 }

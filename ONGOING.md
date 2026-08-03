@@ -65,6 +65,15 @@ metric → why it matters → how to get it. Also verified today: `fossilize-dis
 works and emits NIR + ACO IR + Final Assembly with `s_delay_alu` operands decoded
 (142 of them in one sampled shader) — this closes PLAN.md §8 risk 2.
 
+## Apresentação para o orientador
+
+`Apresentacao.drawio` (PT-BR) ganhou 15 caixas novas — nada do texto original foi tocado
+(45 células preservadas, zero sobreposição). Backup: `Apresentacao.drawio.backup-*`.
+Amarelo = correção · Verde = dado medido · Azul = método · Vermelho = risco.
+Correções principais: é **SPIR-V**, não RISC-V; tirar o scoreboard custa **performance, não
+estabilidade** (não deveria crashar); a bancada é **7800 XT / gfx1101**, não a 7900 XTX;
+Fossilize grava *criação* de pipeline e o replay **recompila, não executa**.
+
 ## Where we stopped
 
 - **Metric 2 proven** on Metro EE (session `20260724-101611`): 52.8 fps avg, 1%/0.1% low

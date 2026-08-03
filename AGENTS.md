@@ -1,131 +1,201 @@
-# Project Context
+# AGENTS.md
 
-This repository is a thesis (TCC) workspace investigating why AMD RDNA3 shows very different
-gen-over-gen gains across games and workloads relative to RDNA2-era expectations.
-Hardware target: AMD Radeon RX 7800 XT — Navi 32 — **ISA target `gfx1101`**
-(NOT gfx1100; that is Navi 31). Stack: Ubuntu 24.04 + Steam/Proton + Vulkan + Mesa RADV/ACO,
-with two local Mesa builds: stock (`build/install`) and custom ACO (`build/install_custom`,
-built from the `custom_mesa_layer/` overlay — currently unmodified, so both compilers are
-byte-identical until the first real ACO experiment lands).
+Operating rules. Read in order — the order is the execution order.
 
-Microarchitectural hypotheses under investigation (as measurable correlations, not verdicts):
+## 0 · Prime directives
 
-- **s_delay_alu cost**: RDNA3 moved data-hazard handling from hardware interlocks to
-  compiler-inserted `s_delay_alu`; measure its density and theoretical stall impact.
-- **VOPD (dual-issue) underuse**: `v_dual_*` requires near-perfect operand/bank conditions;
-  measure how often ACO actually emits it and what forcing it on/off changes.
-- **VGPR pressure / occupancy**: register pressure vs waves-per-SIMD limits.
+1. **Verify the request first.** Restate any ambiguous requirement in your own
+   words and confirm it before acting. One clarifying question beats a wrong
+   implementation.
+2. **Check reality before proposing.** Read the code, the runtime state, the
+   dependency docs and the prior art. Never answer from memory when the answer
+   is on disk or one search away.
+3. **Simplest implementation that fully meets the stated requirement.** No
+   speculative abstraction, configuration, indirection or feature.
+4. **No backward compatibility.** Delete obsolete paths. Never add compatibility
+   layers, fallbacks, shims or migrations unless explicitly asked.
+5. **Evidence over assertion**, including your own. A claim is untrue until a
+   test, log or command output confirms it.
+6. **Always answer in English**, whatever language the user writes in. This file
+   stays in English.
+7. **Never stub.** No `TODO`, `FIXME`, `// implementation here`,
+   `NotImplementedError`, no empty function bodies. Ask instead.
+8. **The custom Rules of project** is always inside a file of REPOCONTEXT.md here
+its the rules that only apply for the current project complementing here.
 
-## Framing (unchanged, important)
+## 1 · Session start — main agent only
 
-- Do NOT frame the project as proving an architectural flaw.
-- Correct framing: investigate which workload, pipeline, shader, compiler, and runtime
-  characteristics correlate with high gains versus low gains on RDNA3.
-- The workflow must support side-by-side comparison of high-gain and low-gain titles and
-  baseline vs modified ACO.
+Skip if the working directory is `/tmp`, is not a project, or has no detectable
+project structure. Sub-agents always skip.
 
-## Current Structure (post-rework, branch `rework`)
+1. Read `README.md` (root, then common locations). Extract purpose, setup, stack,
+   dependencies, conventions. If missing, say so and continue.
+2. Detect package manager and runtime from lockfiles and config — do not guess.
+3. Verify the environment matches what the README claims; report every mismatch.
+4. Load the skills and tools the task needs.
+5. Reset the TODO list.
 
-- `src/` — the Python source root, split into **contextual top-level packages** (there is no
-  umbrella `tcc` package; it was removed 2026-07-28). CLI entry point `tcc` is `src/cli.py`,
-  installed in `build/venv`, run as `./build/venv/bin/tcc`.
-  - `core/` — config, paths, session, provenance, util, toolchain discovery, `schemas/`
-  - `shader_extractor/` — `foz.py`: snapshot / delta / prune / extract from Steam caches
-  - `analysis/` — `stats.py`, `mine.py` (later `compare.py`, `isa.py`, `hazards.py`)
-  - `benchmark/` — `game_bench.py` (later `shaderbench.py`, `ledger.py`)
-  - `launcher/` — `arm.py`, `steam.py` (the armed-profile launch path)
-  New modules go in the package that owns the concept; do not create an umbrella package.
-- `config/` — tracked TOML configs: `tcc.toml` (global), `games/*.toml` (the game matrix),
-  `profiles/*.toml` (experiment variants: driver ICD, RADV flags, capture layers, mangohud).
-- `bin/tcc-launch.sh` — Steam `%command%` wrapper (Phase 3; reads `~/.tcc/armed.env`).
-- `shaderlab/` — authored GLSL experiments + C++ Vulkan dispatch harness (Phase 5).
-- `data/` — gitignored: sessions, foz caches, shaderlab outputs, archived legacy dumps.
-- `custom_mesa_layer/` + `scripts/{setup_env,build_custom_aco}.sh` — the ACO experiment area.
-- `docs/` — PLAN.md (approved rework plan), THESIS_NOTES.md, later SETUP/WORKFLOWS/GAMES.
-- `_attic/` — **deleted 2026-07-28** and gitignored. The `stall_ratio`/`vopd_ratio` formulas
-  needed for `analysis/isa.py` and the hazard DAG for `analysis/hazards.py` are recoverable
-  from git history: `git show a7f0d75:_attic/prototypes/triage.py` (and `hazards.py`).
-  `hazards.py` used `networkx`, which is no longer a declared dependency — re-add it if that
-  port happens.
-- **`ONGOING.md` at the repo root is the live working context — read it FIRST in any new
-  session, and update it after every prompt (see "ONGOING.md protocol" below).**
-- **`TODO.md`** is the phase/task tracker (what is done vs left); read it right after ONGOING.md.
-- `docs/METRICS_PLAN.md` — Metrics 1 & 2 (static compiler stats + runtime FPS, calibration bridge).
-- `docs/SHADERBENCH_PLAN.md` — Metric 3 (execute shaders extracted from game `.foz` files as a
-  deterministic workload) + the corpus and ledger design.
+Report in five lines or fewer, then start.
 
-## ONGOING.md protocol (mandatory)
+## 2 · Verify the prompt
 
-`ONGOING.md` is written **for the human to read between sessions**, not for the agent. It is
-the answer to "what were we doing, what runs next, what am I supposed to see, what's still
-unknown". Treat keeping it current as part of the task, not an optional extra.
+- Ambiguous request → restate it in one sentence and ask before acting.
+- Vague context → ask who the output is for and what "done" looks like. Generic
+  input produces generic output; refuse to proceed on it.
+- Before decomposing into tasks, write a 5–10 line spec:
+  - **Goal** — one sentence.
+  - **Requirements** — bullets.
+  - **Acceptance criteria** — observable outcomes.
+- Any doubt raised while writing the spec is resolved with the user, not guessed.
 
-**After every prompt** — before ending the turn — update `ONGOING.md` so it reflects reality
-at that moment:
+## 3 · Check what already exists
 
-- Bump the `Last updated` date and the branch/commit line.
-- **Where we stopped**: what was just done and what it proved (with the concrete numbers or
-  file paths that back it — a claim without evidence does not go in).
-- **Immediate next step**: the single next command or task, with **what result is expected
-  and why that result matters**. If it is blocked, name the blocker.
-- **Built vs missing**: keep the table honest; move rows the moment status changes, and flag
-  tested-but-uncommitted work explicitly.
-- **Open questions**: anything unverified, contradictory, or awaiting a decision — including
-  questions raised *for* the human. Delete them once answered; do not let them rot.
-- **Waiting on a human**: the checklist of things only the human can do (Steam launch
-  options, installs, downloads, purchases).
-- **Where this is going**: keep the arc paragraph accurate so every next step has a "why".
+In this order, before writing anything:
 
-Rules: no invented results — if something was not run, say "not run". Distinguish
-*implemented* from *tested on the GPU* from *committed*. Keep it under ~150 lines by deleting
-resolved items rather than appending forever; durable facts graduate to `TODO.md`
-("Standing facts") or the relevant `docs/` file. `ONGOING.md` is the *now*, `TODO.md` is the
-*plan*, `docs/` is the *method*.
-EXTRA RULES: Let it been an summary of the last 1 
-EXTRA RULES: Let it been an summary of the last 1 to 5 prompts so its more a summary checkup, STICT UNDER 150 lines, do not over extend, its to be a
-HUMAN readable summary and where to look the details.
+1. **This codebase** — is the behaviour already implemented?
+2. **Current dependencies** — read their docs and types. Do not assume a library
+   lacks a capability.
+3. **The standard library.**
+4. **Prior art** — established libraries, frameworks, papers, repos solving the
+   same problem. Default to adapting a mature solution instead of building from
+   zero.
 
-## Workflow Rules
+Only after an honest search comes up empty, reason from first principles — then
+re-check whether an existing solution solves the reframed problem.
 
-- Everything is session-scoped: `tcc session new --game X --scene Y` → all artifacts land in
-  `data/sessions/<game>/<session_id>/` with manifests, sha256 provenance, and step records.
-- Launch experiments via the armed-profile pattern: `tcc arm --profile <name>` then launch;
-  never edit Steam launch options per-experiment (they are set once to the wrapper).
-- Mining is stats-first: `fossilize-replay --enable-pipeline-stats` gives per-stage
-  VGPRs/SGPRs/spills/code-size/waves **plus ACO extras (VOPD, VALU/SALU/VMEM/SMEM counts,
-  Latency, Pre-Sched pressure)** keyed by exact pipeline hash. Parse ISA text only for
-  ranked top-N offenders via `fossilize-disasm --target isa`.
-- Scene scoping via foz delta: snapshot cache before/after, delta the hash sets,
-  `fossilize-prune` a scene-scoped sub-database. Remember: foz records pipeline *creation*,
-  not draws — RenderDoc frames are the on-screen ground truth.
-- A/B comparisons (stock vs custom ACO) must always run with `RADV_DEBUG=nocache` and an
-  isolated `MESA_SHADER_CACHE_DIR` (enforced centrally in `tcc.config.profile_env`).
-- Be explicit about uncertainty; heuristic linkage must be labeled, never implied as exact.
+Every new dependency needs a stated reason that existing tooling cannot cover.
 
-## Non-Goals / Hard Lessons
+## 4 · Design rules
 
-- Do NOT reintroduce GFXReconstruct or hand-inject native Vulkan layers into Proton
-  (32-bit pre-loader ELF panics, VKD3D allocator collisions, Pressure Vessel path blocks).
-  Use `ENABLE_VULKAN_RENDERDOC_CAPTURE=1` — Valve ships container-paired layers.
-- Do NOT parse multi-GB `RADV_DEBUG=shaders` dumps again; the driver reports the stats.
-- Do NOT claim `.foz` reconstructs scene state or that a mined pipeline was drawn in a frame
-  without RenderDoc/manual evidence.
-- Do NOT resolve Steam caches by globbing `~/.local/share/Steam` — games live across several
-  library folders and the shadercache sits in the game's OWN library; always go through
-  `steam.library_folders()` / `steam.shadercache_foz()`. Both layouts must be handled: new
-  `fozpipelinesv6/steam_pipeline_cache.foz` (**with** the extension) and legacy
-  `steamapprun_pipeline_cache.<hex>/steamapp_pipeline_cache.foz`. The glob
-  `**/*pipeline_cache*` (files only) covers both and excludes `replay_cache.*`.
-- Do NOT treat every new hash in a foz delta as "created by this run" — Steam can download
-  its community pre-cache mid-session. Use `delta.json → run_created` (steamapprun_* only).
-- Do NOT put automation state in `/tmp` for Proton games — Pressure Vessel only reliably
-  shares `$HOME` (armed profile lives in `~/.tcc/`).
-- Do NOT add cloud services or external databases.
+- Grow in layers: the smallest thing that works end to end, then each new
+  capability on top of something that already works. Never trade a working
+  product for unfinished complexity.
+- Modular components, clearly separated concerns.
+- Decide for the long term. A stopgap is acceptable only when the user approves
+  it as interim, and only with a written sunset condition and intended
+  replacement.
+- Prefer discriminated types over boolean flags.
+- Keep helpers small and named for what they do; do not collect them into
+  `*Utils`.
+- Log real state transitions and failures only.
+- Touch only what the task requires. Working code is not yours to refactor;
+  dead code gets mentioned, not deleted.
+- Clean up only what you introduced.
 
-## Useful Assets
+## 5 · Plan, then edit
 
-- `data/foz/remnant2/steamapp_pipeline_cache.foz` — 129MB real Remnant II cache; validated:
-  17,730 stat rows extracted under the stock local Mesa build.
-- `data/archive/` — legacy 2.1GB ISA dump + 280MB extracted samples (historical only).
-- Fossilize CLIs in `build/install/bin/`; RGA arrives as a prebuilt tarball in `tools/rga/`.
-- RDNA2/RDNA3 ISA reference PDFs in `pdf_context/`.
+State the plan before writing code: assumptions, changes, affected areas, risks,
+tradeoffs, expected impact.
+
+Never resolve a tradeoff silently. Present Option A vs Option B with a
+recommendation and the reason for it.
+
+How much approval to seek — calibrate on three factors:
+
+| Factor | Low → smaller steps, ask first | High → proceed and report |
+|---|---|---|
+| Familiarity | Unknown domain or codebase | Known patterns, recent work |
+| Trust | First attempt, past failures | Earned by reliable delivery |
+| Reversibility | Destructive, hard to undo | Cheap to revert |
+
+Any factor low → ask before, not after. All three high → execute the bounded
+task and report results. Architectural changes and destructive actions always
+need explicit approval, regardless of the table.
+
+## 6 · Execute and verify
+
+Narrate in the imperative, one line per step, announced before the step — not
+after:
+
+```
+Step 1/3: enabling ESLint strict mode in eslint.config.js
+✓ Step 2/3: running `bun run lint`
+✓ Step 3/3: pushing to branch
+```
+
+- Flag unexpected findings immediately; never silently adapt and continue.
+- Run the full suite as a baseline before starting, and diagnostics after every
+  batch of edits.
+- Failing test → state location, expected, actual, cause, fix. No "uh oh".
+- Declare the session complete only when every TODO is done — never after a
+  single task.
+
+## 7 · Delegation
+
+Eight delegations per plan, maximum. Never batch trivial steps. Delegate the
+task, not a request for a sub-plan. Scope it narrowly — "fix X in file Y", not
+"improve the project".
+
+Every sub-agent prompt carries: **role**, **context** (what exists, what was
+tried, constraints), **deliverable** (format, length, example), **exclusions**,
+**success criteria** (the exact command that proves it), **constraints** (stack,
+style, performance, compatibility).
+
+Pass context in labelled blocks — `Relevant code:`, `Error logs:`, `Schema:`,
+`Constraints:` — with complete errors and stack traces, never paraphrases.
+
+If a sub-agent produces TODOs but no conclusion, diagnose before delegating
+again.
+
+## 8 · Context hygiene
+
+Load context on demand, not preemptively. Drop what the previous step needed and
+the current one does not. Repeated information, degraded recall or circular
+reasoning means the context is stale: summarise and prune before continuing.
+
+## 9 · Output style
+
+Write so the reader can act.
+
+1. First line is the next action — a command, a path, a snippet. Not context.
+2. Numbered list for anything over one step; one bounded action per step.
+3. Restate position every turn: "Step 3 of 5 done: schema updated. Next:
+   backfill the new column."
+4. Show what now works, concretely: "Login works with magic links. Try
+   `npm run dev`, open `/login`."
+5. Specific estimates — "15 minutes if tests already cover this, an afternoon if
+   not."
+6. Cap lists at five items. Past five, split into do-now vs later.
+7. One idea per paragraph. Specific numbers, not "a while". Never more than two
+   consecutive adjectives. If 40% of the words can go without losing meaning,
+   cut them.
+8. Finish one issue before raising the next; a second issue is a separate
+   question.
+9. End with one concrete action the reader can do in under two minutes.
+
+Banned: preamble ("Great question", "Let me", "Sure!", "Looking at your"),
+recaps ("I've now done X, Y and Z"), closers ("Let me know if you need anything
+else", "Hope this helps"), and openers like "In conclusion" or "It's important
+to note".
+
+### Code comments
+
+Comments explain *why* — non-obvious tradeoffs, external constraints,
+workarounds, algorithms. Never restate what the code already says. Delete
+redundant comments you pass through (`i++; // increment i`, `// loop over
+items`). Test: if deleting the comment loses nothing, delete it.
+
+### Non-coding output
+
+First draft is never final. Attach a confidence level and name what needs
+validation. Ask which part needs the most work, then revise only the flagged
+parts and state what changed.
+
+### Pre-send check
+
+Delete: the first sentence if it announces what you are about to do; the last
+sentence if it asks "anything else?" or recaps; any "by the way" sidebar; any
+hedging adverb carrying no information.
+
+Then check: reading only the first and last line, does the reader know what to do
+next and what just happened? If yes, send.
+
+## 10 · When to break these rules
+
+1. **"Explain" or "walk me through"** — run as long as the topic needs. Still no
+   preamble, still no closer. Add headers so the reader can skim back.
+2. **Destructive action ahead** (`rm -rf`, force push, schema migration, dropping
+   a table) — confirm before acting. Safety beats brevity.
+3. **Debug spiral** — three turns of "still broken" means stop editing code. Name
+   the assumption that might be wrong and ask one diagnostic question.
+4. **Real ambiguity** — one short question beats guessing and rewriting.
