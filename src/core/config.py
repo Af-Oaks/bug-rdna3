@@ -292,7 +292,12 @@ def profile_env(
         env["ENABLE_VULKAN_RENDERDOC_CAPTURE"] = "1"
 
     if profile.sqtt:
-        env["RADV_THREAD_TRACE_TRIGGER"] = str(Path(session_dir) / "sqtt.trigger")
+        # RADV_THREAD_TRACE_TRIGGER no longer exists in Mesa; SQTT moved to the
+        # shared Vulkan runtime, which needs the tracer armed (MESA_VK_TRACE=rgp,
+        # vk_instance.c:206-210) as well as the trigger path. Setting only the old
+        # variable produced no trace and no error.
+        env["MESA_VK_TRACE"] = "rgp"
+        env["MESA_VK_TRACE_TRIGGER"] = str(Path(session_dir) / "sqtt.trigger")
 
     env.update(profile.env)
     return env

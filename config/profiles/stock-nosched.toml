@@ -1,0 +1,21 @@
+# Stock driver with ALL ACO scheduling disabled: the pre-RA scheduler plus both
+# post-RA schedulers (ACO_DEBUG=nosched → DEBUG_NO_SCHED | DEBUG_NO_SCHED_ILP |
+# DEBUG_NO_SCHED_VOPD, aco_ir.cpp:35).
+#
+# Arm 2, experiment E2.2: the upper bound on what ACO's scheduling is worth.
+# Expect large, easily-measured regressions — if this profile does NOT regress,
+# the measurement chain is broken, not the compiler. Use it as the positive
+# control for the whole ablation matrix.
+
+[profile]
+name = "stock-nosched"
+driver = "stock"
+radv_debug = []
+radv_perftest = []
+mangohud = false
+renderdoc = false
+sqtt = false
+shader_cache_dir = "session"
+
+[env]
+ACO_DEBUG = "nosched"

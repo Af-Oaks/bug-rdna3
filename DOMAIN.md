@@ -31,6 +31,56 @@ says the metric you optimised was not the bottleneck.
 
 All three are built. M3's scope is limited by a measured result — see below.
 
+## The Two Experimental Arms
+
+Each arm now has its own document — plan, status and experiments:
+**[docs/ARM1_CORPUS.md](docs/ARM1_CORPUS.md)** and
+**[docs/ARM2_COMPILER.md](docs/ARM2_COMPILER.md)**. The summary below is the map;
+those are the territory.
+
+The research methodology operates along two complementary arms:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           THE TWO EXPERIMENTAL ARMS                         │
+├──────────────────────────────────────┬──────────────────────────────────────┤
+│ ARM 1: Production Game Corpus (.foz) │ ARM 2: Directed Microbenchmarking &  │
+│                                      │        Compiler Architecture         │
+├──────────────────────────────────────┼──────────────────────────────────────┤
+│ • Workload: Real game SPIR-V from    │ • Workload: Authored GLSL/Vulkan     │
+│   Fossilize .foz caches (18+ titles) │   microbenchmarks (shaderlab/)       │
+│ • Metrics: M1 static, M2 in-game,    │ • Metrics: Isolated ALU latencies,   │
+│   M3 shaderbench (native Vulkan)     │   stall cycle curves, occupancy steps│
+│ • Focus: Production macro behavior,  │ • Focus: Isolating silicon limits    │
+│   wave64 default impact, game ledger │   vs. compiler heuristic failures    │
+│ • Surface: Driver flags, full corpus │ • Surface: ACO vs LLVM pass design,  │
+│   mining, title-grouped regression   │   pre- vs post-RA, bank conflict math│
+└──────────────────────────────────────┴──────────────────────────────────────┘
+```
+
+## Microarchitectural Background & The Three Hardwalls
+
+### The SASS Control Code Precedent
+On NVIDIA (Kepler GK110 through Blackwell), hardware scoreboards for fixed-latency
+ALU math were replaced with compiler control codes (stall counts, yield flags, `DEPBAR`,
+operand reuse). Reverse-engineering efforts (Maxas, CuAssembler, CuAsmRL, Huerta et al.,
+Zhang et al.) proved that compiler instruction ordering, register bank conflicts (4 banks),
+and dual-issue packing dominate realized performance. RDNA3 adopted the exact same model
+via `S_DELAY_ALU` (ALU Software Scheduling, SOPP 7) and VOPD (dual-issue VALU, 4 banks).
+LLVM backend commits confirm GFX12 (RDNA4) expands `S_DELAY_ALU` (FP8/BF8, `s_wait_alu`),
+proving this is a permanent architectural paradigm.
+
+### The Three Hardwalls of Static GPU Scheduling
+1. **Dynamic Execution Mask & Wave64 Divergence (Sampaio & Pereira TOPLAS 2013):**
+   The compiler cannot know at compile time whether a Wave64 VALU takes 1 or 2 issue
+   cycles, introducing mandatory estimation error into `s_delay_alu` countdowns.
+2. **Variable Memory Latency Interleaving:**
+   Static ALU delays placed between memory instructions (`s_waitcnt`) stall waves
+   that are already memory-blocked, creating false bottlenecks.
+3. **Register Pressure vs. Dual-Issue Conflict (Shobaki et al. CGO 2024):**
+   Reordering instructions to satisfy VOPD 4-bank rules stretches live ranges,
+   crossing 24-VGPR occupancy cliffs (16→12→10→9→8→7→6→5 waves/SIMD on gfx1101).
+
 ## What a `.foz` is
 
 A Fossilize database: tagged, content-addressed records of Vulkan object
@@ -219,9 +269,19 @@ pair, never an average across time.
 - **VOPD underuse** — reframed by measurement. VOPD requires wave32; ACO picks
   wave64 for 98.6% of remnant2's shaders and emits VOPD in 244 of the 248 wave32
   ones. So it is a **wave-size selection** outcome, not a failure to find
-  dual-issue pairs. ⚠️ **n = 1 game.** Needs the corpus replay grouped by
-  `cohort` and `api` before it generalises. `RADV_PERFTEST=cswave32,pswave32,gewave32`
-  is the real independent variable.
+  dual-issue pairs. `RADV_PERFTEST=cswave32,pswave32,gewave32` is the real
+  independent variable — **verified 2026-08-21** to move the reported subgroup
+  size 64 → 32 on 300/300 stages.
+  ✅ **n = 2.** Solcesto: 300/300 stages wave64 with **VOPD = 0** by default;
+  forced to wave32, **278/300 (92.7%) carry VOPD**, 2990 instructions, and VALU
+  falls by exactly 2990 — each VOPD absorbs one VALU, 13.9% of the VALU stream.
+  ⚠️ Still two games, graphics-only. Needs the corpus replay grouped by `cohort`
+  and `api`. Numbers and caveats: [docs/ARM2_COMPILER.md](docs/ARM2_COMPILER.md) §5.
+- **VOPD is decided after register allocation** — `schedule_vopd` runs post-RA
+  (`aco_interface.cpp:157`) and `aco_register_allocation.cpp` never mentions
+  VOPD. Bank conflicts that block a pair are an accident of allocation, not a
+  decision. Pairing is also capped at a 16-instruction window. This is the
+  mechanism behind "compiler underuse" and it is readable in the source.
 - **VGPR pressure / occupancy** — `max_waves` is collected; no calibration
   against measured FPS yet.
 

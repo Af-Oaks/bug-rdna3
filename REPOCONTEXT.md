@@ -13,9 +13,39 @@ gen-over-gen gains. Target: RX 7800 XT, Navi 32, **gfx1101**.
 2. **[DOMAIN.md](DOMAIN.md)** — what a `.foz` is, why replay recompiles, what the
    columns mean, what the hypotheses are and where they stand.
 3. **[src/CONTEXT.md](src/CONTEXT.md)** — the code, explained per folder.
-4. **[TODO.md](TODO.md)** — the queue. Method lives in `docs/`:
+4. **[TODO.md](TODO.md)** — the queue. Measurement plans live in `docs/`:
    [THESIS_NOTES.md](docs/THESIS_NOTES.md) and
    [METRICS_CATALOG.md](docs/METRICS_CATALOG.md).
+
+## The research layer — read before writing anything academic
+
+Added 2026-08-17. These carry the thesis argument; the files above carry the
+mechanism. Anything that will reach the dissertation goes through them.
+
+| file | what it holds |
+|---|---|
+| [docs/PREMISE.md](docs/PREMISE.md) | why the study exists: the announced-vs-measured gap, and **what RDNA3 actually changed according to AMD's own manuals** — the popular "it removed hazard detection" framing is wrong and §2 shows why |
+| [docs/STATE_OF_THE_ART.md](docs/STATE_OF_THE_ART.md) | **verified reference data** (`S_DELAY_ALU` encoding, VOPD rules, gfx1101 occupancy constants) + the literature on compiler-managed hazards + §4, the claim-by-claim audit of the reports now in `docs/attic/`, whose bitfield and occupancy tables are **wrong** |
+| [docs/RESEARCH_SYNTHESIS_AND_REFUTATION.md](docs/RESEARCH_SYNTHESIS_AND_REFUTATION.md) | second-opinion layer. Its occupancy work is sound; its LLVM/GFX12 sections are **unverified and labelled as such**, and three of its claims were retracted on 2026-08-20 |
+| [docs/METHODOLOGY.md](docs/METHODOLOGY.md) | research question, the three hypotheses with falsification criteria, the variable table, the nine-step protocol, the outcome space, threats to validity |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md) | controlled vocabulary, PT/EN, each term tied to its ISA section |
+| [docs/BIBLIOGRAPHY.md](docs/BIBLIOGRAPHY.md) | annotated references, ABNT, each with a verification status. **Nothing ⚠️ may be cited** |
+| [docs/RESEARCH_GUIDELINES.md](docs/RESEARCH_GUIDELINES.md) | claim classes, provenance obligations, the standing prohibitions. **Binding on agents** |
+| [docs/ARM1_CORPUS.md](docs/ARM1_CORPUS.md) | **Arm 1** — the `.foz` production corpus: what each instrument proved, the queued analyses in dependency order, and what this arm structurally cannot conclude |
+| [docs/ARM2_COMPILER.md](docs/ARM2_COMPILER.md) | **Arm 2** — microbenchmarking and compiler architecture: the ACO pass order read at the source, the post-RA/VOPD-blind-allocator finding, the `ACO_DEBUG` ablation switches, six experiments, and the first measured result |
+| [docs/preprojeto/](docs/preprojeto/) | the PT-BR pre-project, LaTeX. **One new numbered file per revision** — never edit a version in place |
+| [docs/attic/](docs/attic/README.md) | **retired documents. Nothing here may be cited.** Claims checked and found wrong; kept as history, not as evidence |
+
+**Standing rule added 2026-08-20:** a ✅ mark is a claim like any other. The
+project shipped a fabricated reference carrying one — *"DIAS, B. C.; PEREIRA,
+Divergence-Aware Register Allocation for GPUs, TOPLAS 38(4), 2016"*, whose DOI
+returns 404 — and it was the sole source satisfying the Brazilian-literature
+requirement. **Before a reference is marked ✅, resolve its DOI or its record.**
+
+Three PT-BR mind maps in `mapas/` visualise the same material:
+`Premissa.drawio`, `Metodologia.drawio`, and `Board.drawio` (the living board of
+what to test, what was found, and which routes are dead). They are hand-edited —
+no script regenerates them. `Apresentacao.drawio` is frozen.
 
 ## Layout
 
@@ -29,6 +59,7 @@ gen-over-gen gains. Target: RX 7800 XT, Navi 32, **gfx1101**.
 - `config/` — `tcc.toml`, `games/*.toml` (the matrix), `profiles/*.toml`.
 - `bin/tcc-launch.sh` — the Steam `%command%` wrapper.
 - `data/` — gitignored: `sessions/`, `foz/` (verified archive), `corpus/` (merged).
+- `mapas/` — PT-BR mind maps, hand-edited. See "The research layer" above.
 - `custom_mesa_layer/` + `scripts/build_custom_aco.sh` — the ACO experiment area.
 - `shaderlab/` — the C++ GPU harness (Metric 3). Carries its own `CONTEXT.md`
   under the same protocol as the `src/` packages.
@@ -72,6 +103,18 @@ package.
 - Launch experiments via the armed profile. Never edit Steam launch options
   per-experiment — they are set once to the wrapper.
 - Label uncertainty. Heuristic linkage is never implied as exact.
+- **Prove a profile bites before trusting a null from it.** Added 2026-08-21
+  after two of six profiles were found silently inert: `stock-novopd` set
+  `RADV_DEBUG=novopd`, which exists nowhere in Mesa, and `config.py` set
+  `RADV_THREAD_TRACE_TRIGGER`, also gone. `parse_debug_string`
+  (`src/util/u_debug.c:420-443`) **ignores unknown tokens without a warning**, so
+  a wrong flag looks exactly like a real null result. Before an A/B is believed,
+  show the intended knob changed something in the emitted code — a statistic
+  moving to zero, a subgroup size changing. `custom`, `capture-rdc` and
+  `bench-mangohud` have not been audited this way.
+- **Join ablation A/Bs on `(Pipeline hash, Executable name)`, never on `Hash`.**
+  The shader hash changes when the code changes, so joining on it silently keeps
+  only the stages the ablation did *not* affect — 13 of 300 in the first run.
 
 ## Non-goals — hard lessons, do not relitigate
 

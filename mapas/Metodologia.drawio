@@ -1,0 +1,127 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="metodologia" name="Metodologia">
+    <mxGraphModel dx="1422" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="2450" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="titulo" value="&lt;b&gt;METODOLOGIA — como as afirmações são produzidas&lt;/b&gt;&lt;br&gt;Mapa visual de docs/METHODOLOGY.md. Escrito para ser discutido: toda hipótese tem critério de refutação, e todo passo tem número estável." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;verticalAlign=middle;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1520" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legenda" value="&lt;b&gt;LEGENDA&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp; 🟩 instrumento pronto e validado&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp; 🟦 método / ferramenta&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp; 🟨 existe parcialmente&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp; 🟥 limite de validade / ainda não existe&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp; ⚪ pergunta ou decisão em aberto" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;align=left;verticalAlign=middle;fontSize=12;spacing=8;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="1520" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pergunta" value="&lt;b&gt;PERGUNTA DE PESQUISA&lt;/b&gt;&lt;br&gt;&lt;br&gt;Na RDNA3, quais características de uma carga de shaders e da saída do compilador determinam quanto da vazão especificada é de fato alcançada — e quanto da diferença é atribuível a decisões do compilador, e não ao hardware?&lt;br&gt;&lt;br&gt;&lt;i&gt;Investigativa, não confirmatória. &quot;Nada disso&quot; é resposta legítima e também é resultado.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=3;align=left;verticalAlign=middle;fontSize=14;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="145" width="1520" height="115" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h_hip" value="&lt;b&gt;HIPÓTESES — cada uma diz o que a refutaria&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="275" width="700" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="H1" value="&lt;b&gt;H1 — o custo da distância de emissão gerida por software&lt;/b&gt;&lt;br&gt;&lt;br&gt;As esperas S_DELAY_ALU inseridas pelo compilador respondem por parcela mensurável do custo, e essa parcela varia com o caráter da carga.&lt;br&gt;&lt;br&gt;&lt;b&gt;Medida por:&lt;/b&gt; densidade e distância decodificada das esperas no assembly final, regredidas contra o tempo de GPU medido por shader.&lt;br&gt;&lt;br&gt;&lt;b&gt;Refutada se:&lt;/b&gt; a densidade não tem relação com o tempo depois de controlar tamanho do shader e intensidade de memória — ou seja, as esperas caem onde a wave já pagava parada.&lt;br&gt;&lt;br&gt;🟨 &lt;b&gt;Status:&lt;/b&gt; o instrumento de contagem existe e foi conferido contra grep independente. &lt;b&gt;Nenhum custo foi medido.&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="310" width="490" height="290" as="geometry" />
+        </mxCell>
+
+        <mxCell id="H2" value="&lt;b&gt;H2 — a emissão dupla é barrada pela política de wave, não pela busca de pares&lt;/b&gt;&lt;br&gt;&lt;br&gt;A baixa captura de VOPD decorre de o driver adotar wave64 por padrão — onde o VOPD é ilegal por regra de hardware — e não de o compilador falhar em achar pares.&lt;br&gt;&lt;br&gt;&lt;b&gt;Medida por:&lt;/b&gt; distribuição de subgroup_size e razão vopd/valu no corpus, por estágio e por API; depois remedida com wave32 forçado.&lt;br&gt;&lt;br&gt;&lt;b&gt;Refutada se:&lt;/b&gt; forçar wave32 não elevar a captura — ou elevar sem mudar tempo algum. O segundo caso preserva o mecanismo e destrói a relevância.&lt;br&gt;&lt;br&gt;🟥 &lt;b&gt;Status: n = 1 jogo.&lt;/b&gt; Não generalizar antes do replay do corpus inteiro." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="555" y="310" width="490" height="290" as="geometry" />
+        </mxCell>
+
+        <mxCell id="H3" value="&lt;b&gt;H3 — a pressão de ocupância condiciona quem pode se beneficiar&lt;/b&gt;&lt;br&gt;&lt;br&gt;O recurso que limita a ocupância (VGPR, SGPR, LDS, scratch) determina se uma mudança de compilador ajuda aquele shader.&lt;br&gt;&lt;br&gt;&lt;b&gt;Medida por:&lt;/b&gt; modelo de ocupância por shader a partir dos limites do gfx1101 no manual, atribuindo o recurso que amarra e a folga até o próximo degrau.&lt;br&gt;&lt;br&gt;&lt;b&gt;Refutada se:&lt;/b&gt; shaders respondem igual independentemente do limitador — o que significaria que a atribuição não carrega informação, e isso se reporta.&lt;br&gt;&lt;br&gt;&lt;b&gt;Autoverificação:&lt;/b&gt; o modelo tem de reproduzir a ocupância reportada pelo driver em TODA linha. Divergência = modelo errado.&lt;br&gt;&lt;br&gt;🟥 &lt;b&gt;Status:&lt;/b&gt; coluna coletada, modelo não existe." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="310" width="490" height="290" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h_inst" value="&lt;b&gt;INSTRUMENTOS — três medições independentes da mesma mudança, unidas por um livro-razão&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="615" width="1000" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="M1" value="&lt;b&gt;🟩 M1 — ESTÁTICA&lt;/b&gt;&lt;br&gt;&lt;i&gt;o que o compilador emitiu&lt;/i&gt;&lt;br&gt;&lt;br&gt;Recompila o corpus e lê o relatório do próprio driver: registradores, spills, ocupância, mix de instruções, VOPD, tamanho de wave, tempo de compilação.&lt;br&gt;&lt;br&gt;Determinística. &lt;b&gt;Não precisa do jogo aberto.&lt;/b&gt;&lt;br&gt;&lt;br&gt;🟥 Não diz que ficou mais rápido." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="650" width="365" height="215" as="geometry" />
+        </mxCell>
+
+        <mxCell id="M3" value="&lt;b&gt;🟩 M3 — EXECUÇÃO ISOLADA&lt;/b&gt;&lt;br&gt;&lt;i&gt;o que aquele código custa à GPU&lt;/i&gt;&lt;br&gt;&lt;br&gt;Executa os shaders reais sob carga sintética fixa, cronometrado por timestamps da GPU, em processo isolado com detecção de falha.&lt;br&gt;&lt;br&gt;Todo shader aparece na saída &lt;b&gt;com um status&lt;/b&gt; — denominador que encolhe parece melhoria.&lt;br&gt;&lt;br&gt;🟥 Escopo: só Vulkan nativo." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="425" y="650" width="365" height="215" as="geometry" />
+        </mxCell>
+
+        <mxCell id="M2" value="&lt;b&gt;🟩 M2 — EM JOGO&lt;/b&gt;&lt;br&gt;&lt;i&gt;o que o jogador recebe&lt;/i&gt;&lt;br&gt;&lt;br&gt;Captura de tempos de quadro em benchmark embutido ou cena roteirizada; média e percentis baixos.&lt;br&gt;&lt;br&gt;Barulhenta e lenta, mas é a única medição do que de fato chega ao usuário.&lt;br&gt;&lt;br&gt;🟥 Não isola causa alguma sozinha." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="810" y="650" width="365" height="215" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ledger" value="&lt;b&gt;🟦 O LIVRO-RAZÃO&lt;/b&gt;&lt;br&gt;&lt;i&gt;uma linha por (carga × revisão do compilador)&lt;/i&gt;&lt;br&gt;&lt;br&gt;Ler atravessando a linha é o ponto:&lt;br&gt;&lt;br&gt;• ganho estático + ganho na GPU + ganho no quadro → melhoria real&lt;br&gt;• ganho estático sem ganho na GPU → a métrica otimizada não era o custo&lt;br&gt;• ganho na GPU sem ganho no quadro → o shader não é quente o bastante&lt;br&gt;&lt;br&gt;&lt;b&gt;Os três são publicáveis.&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1195" y="650" width="365" height="215" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="M1" target="ledger"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="M3" target="ledger"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;" edge="1" parent="1" source="M2" target="ledger"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="nulo" value="&lt;b&gt;O TESTE NULO — o experimento de controle que autoriza tudo o que vem depois&lt;/b&gt;&lt;br&gt;&lt;br&gt;Compara-se um compilador contra uma cópia não modificada dele mesmo, sobre entrada idêntica. &lt;b&gt;O resultado TEM de dar zero.&lt;/b&gt; Se a cadeia captura → recompilação → parse → junção estivesse fabricando diferenças, elas apareceriam aqui. Nenhum número diferente de zero é acreditado antes deste passar — e é preciso mostrar que os dois binários são de fato distintos, e não o mesmo carregado duas vezes.&lt;br&gt;&lt;br&gt;&lt;i&gt;A mesma disciplina vale para modelos: o modelo de ocupância tem de reproduzir a ocupância que o driver reporta antes de qualquer afirmação sobre ocupância.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=3;align=left;verticalAlign=middle;fontSize=13;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="885" width="1520" height="145" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h_var" value="&lt;b&gt;VARIÁVEIS&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="1045" width="400" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vi" value="&lt;b&gt;INDEPENDENTES&lt;/b&gt;&lt;br&gt;&lt;i&gt;o que o experimento manipula&lt;/i&gt;&lt;br&gt;&lt;br&gt;• &lt;b&gt;política de tamanho de wave&lt;/b&gt;&lt;br&gt;RADV_PERFTEST=cswave32,pswave32,gewave32&lt;br&gt;→ um arquivo de configuração, nenhuma mudança de compilador. &lt;b&gt;A variável independente real mais barata que existe hoje.&lt;/b&gt;&lt;br&gt;&lt;br&gt;• &lt;b&gt;revisão do compilador&lt;/b&gt; — muda exatamente quando o compilador muda&lt;br&gt;&lt;br&gt;• clock de shader (secundária)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1080" width="365" height="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vd" value="&lt;b&gt;DEPENDENTES&lt;/b&gt;&lt;br&gt;&lt;i&gt;o que se mede&lt;/i&gt;&lt;br&gt;&lt;br&gt;• métricas do código emitido: VGPR/SGPR, spills, ocupância, vopd/valu, densidade de espera, tamanho de código, tempo de compilação&lt;br&gt;&lt;br&gt;• custo de execução na GPU por shader (timestamps)&lt;br&gt;&lt;br&gt;• taxa de quadros e percentis de tempo de quadro" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="425" y="1080" width="365" height="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vc" value="&lt;b&gt;CONTROLADAS&lt;/b&gt;&lt;br&gt;&lt;i&gt;o que se mantém fixo&lt;/i&gt;&lt;br&gt;&lt;br&gt;• uma máquina, um driver, um sistema&lt;br&gt;• entrada idêntica (mesmo corpus)&lt;br&gt;• caches desabilitados e isolados por execução — senão um A/B compara quente contra frio&lt;br&gt;• número de threads fixo&lt;br&gt;• compiladores alternados &lt;b&gt;por lote&lt;/b&gt;, para que deriva térmica atinja os dois lados igualmente" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="810" y="1080" width="365" height="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vn" value="&lt;b&gt;🟥 EXPLICITAMENTE NÃO MEDIDA&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Ganho entre gerações.&lt;/b&gt;&lt;br&gt;&lt;br&gt;Não há hardware RDNA2 na bancada. Nenhum delta entre gerações é reivindicado como medição própria — ele é &lt;b&gt;citado como premissa&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Os rótulos de coorte (ganho alto / ganho baixo) são &lt;b&gt;evidência externa citada&lt;/b&gt;, válidos só com fonte, data, resolução, preset e versão de driver registrados.&lt;br&gt;&lt;br&gt;&lt;i&gt;Esta é a caixa mais importante do mapa.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1195" y="1080" width="365" height="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h_prot" value="&lt;b&gt;PROTOCOLO — nove passos. O cronograma referencia estes números, então eles são identificadores estáveis.&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="1345" width="1100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p123" value="&lt;b&gt;1. Revisão bibliográfica e estudo da especificação&lt;/b&gt;&lt;br&gt;Leitura sistemática dos manuais RDNA2 e RDNA3, contrastando como cada geração resolve dependências; revisão da literatura sobre escalonamento em compilador vs hardware e sobre caracterização de GPU por microbenchmark.&lt;br&gt;&lt;br&gt;&lt;b&gt;2. Construção do corpus&lt;/b&gt;&lt;br&gt;Extrair os shaders que jogos reais compilam, sem instrumentar os jogos: a própria camada de cache da plataforma registra todo pipeline criado durante a partida. Copiar com verificação criptográfica, fundir por título e registrar proveniência.&lt;br&gt;&lt;br&gt;&lt;b&gt;3. Instrumentação estática&lt;/b&gt;&lt;br&gt;Recompilar o corpus pelo driver em estudo e coletar, por estágio, o relatório do próprio compilador. Desmontar os shaders mais bem ranqueados até o código de máquina final." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1380" width="490" height="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p456" value="&lt;b&gt;4. Validação por teste nulo&lt;/b&gt;&lt;br&gt;Comparar o compilador contra cópia idêntica de si mesmo. O resultado tem de ser zero. Repetido para cada instrumento.&lt;br&gt;&lt;br&gt;&lt;b&gt;5. Medição de execução isolada&lt;/b&gt;&lt;br&gt;Executar os shaders reais sob carga sintética fixa, cronometrados por timestamps da GPU, sob isolamento de processo com detecção de falha — experimento de compilador pode travar o dispositivo, e travar é resultado a registrar, não erro a esconder.&lt;br&gt;&lt;br&gt;&lt;b&gt;6. Medição em jogo&lt;/b&gt;&lt;br&gt;Capturar tempos de quadro em benchmark embutido ou cena roteirizada, reportando média e percentis baixos. Barulhento e lento, mas é a única medida do que o usuário recebe." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="555" y="1380" width="490" height="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p789" value="&lt;b&gt;7. Experimentos controlados&lt;/b&gt;&lt;br&gt;Manipular uma variável por vez. Primeiro a política de tamanho de wave, que não exige mexer no compilador; depois modificações dirigidas no compilador, cada uma medida pelos três instrumentos. &lt;b&gt;Instabilidade produzida por modificação agressiva é resultado&lt;/b&gt; — mede quanta margem o compilador estava deixando.&lt;br&gt;&lt;br&gt;&lt;b&gt;8. Caracterização e correlação&lt;/b&gt;&lt;br&gt;Classificar cargas por caráter medido, com limiares calibrados na distribuição do corpus, e testar se classes diferentes respondem diferente. Se todas responderem igual, a taxonomia não carrega informação — e isso se reporta.&lt;br&gt;&lt;br&gt;&lt;b&gt;9. Análise estatística e redação&lt;/b&gt;&lt;br&gt;Tamanhos de efeito com intervalo, correção para comparações múltiplas, e inferência agrupada: linhas por shader aninhadas em poucos jogos não são amostras independentes." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1380" width="490" height="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h_res" value="&lt;b&gt;ESPAÇO DE RESULTADOS — declarado de antemão, porque o estudo é investigativo e não promete um número&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="1725" width="1100" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ra" value="&lt;b&gt;(a) NENHUM GANHO RECUPERÁVEL, com explicação arquitetural&lt;/b&gt;&lt;br&gt;&lt;br&gt;Mudanças no compilador não produzem melhoria mensurável — e as medições explicam por quê: as esperas caem em caminhos já parados por memória, ou a ocupância amarra antes de o escalonamento importar.&lt;br&gt;&lt;br&gt;&lt;b&gt;Valor:&lt;/b&gt; atribui a lacuna à arquitetura e não ao software, e fecha o caminho do compilador &lt;b&gt;com evidência&lt;/b&gt;." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1760" width="490" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rb" value="&lt;b&gt;(b) GANHO, condicionado à classe de carga, possivelmente com instabilidade&lt;/b&gt;&lt;br&gt;&lt;br&gt;Modificações específicas melhoram algumas cargas e não outras — por exemplo beneficiando shaders limitados por computação enquanto prejudicam ou desestabilizam outros.&lt;br&gt;&lt;br&gt;&lt;b&gt;Valor:&lt;/b&gt; o condicionamento É a descoberta. E o ponto de quebra quantifica quanta margem o compilador original estava guardando." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="555" y="1760" width="490" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rc" value="&lt;b&gt;(c) NENHUM GANHO E NENHUMA CAUSA ÚNICA, mas uma explicação melhor do compilador&lt;/b&gt;&lt;br&gt;&lt;br&gt;Mesmo sem melhoria, a caracterização explica o comportamento real do compilador e o raciocínio por trás das suas escolhas — por que wave64 é a política padrão, por que a emissão dupla é raramente alcançável, por que as regras de pareamento são difíceis de satisfazer.&lt;br&gt;&lt;br&gt;&lt;b&gt;Valor:&lt;/b&gt; troca especulação por medição." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1760" width="490" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="entregue" value="&lt;b&gt;ENTREGUE INDEPENDENTE DE QUAL DOS TRÊS OCORRA&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;• uma caracterização do escalonamento gerido por compilador na RDNA3 sobre cargas reais, e não sobre kernels sintéticos&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;• um método reprodutível e uma bancada que se valida antes de ser acreditada, reutilizável para arquiteturas seguintes&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;• um conjunto documentado de resultados negativos e limites de escopo — normalmente a parte que ninguém escreve" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;align=left;verticalAlign=middle;fontSize=12;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="2035" width="1520" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ameacas" value="&lt;b&gt;🟥 AMEAÇAS À VALIDADE E LIMITES — declarados junto com o resultado, nunca numa seção que o leitor alcança depois de já ter formado impressão&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Internas:&lt;/b&gt; cache precisa estar desabilitado e isolado, senão o A/B compara quente contra frio · confirmar qual driver realmente carregou pelo ambiente registrado, nunca pela configuração · deriva térmica tratada alternando compiladores por lote · a criação de pipelines colapsa após o primeiro encontro, então captura em regime permanente registra sobras, não o conjunto quente.&lt;br&gt;&lt;br&gt;&lt;b&gt;De construto:&lt;/b&gt; densidade de espera é proxy de custo e precisa ser validada contra tempo medido antes de ser usada como tal — proxy que falha na validação é achado, não coisa a esconder · o score que ranqueia shaders não é calibrado: serve para escolher o que inspecionar, nunca como medida de gravidade · entradas sintéticas não são as da cena · criação de pipeline não é uso · contagem estática não é custo.&lt;br&gt;&lt;br&gt;&lt;b&gt;Externas:&lt;/b&gt; uma GPU, um driver, um sistema operacional, e jogos rodando através de camadas de tradução cujo custo entra em toda medição · M3 não cobre títulos DX12 traduzidos (medido, não suposto).&lt;br&gt;&lt;br&gt;&lt;b&gt;Estatísticas:&lt;/b&gt; testar muitas métricas em muitos títulos produz significância espúria sem correção · linhas por shader não são observações independentes: para afirmação no nível do jogo, o n efetivo é o número de jogos · com linhas demais tudo vira significante e nada vira grande, por isso se reporta tamanho de efeito e não valor-p." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=12;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="2150" width="1520" height="260" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

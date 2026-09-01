@@ -1,0 +1,15 @@
+# Stock Mesa RADV/ACO build with Wave32 forced for compute, pixel, and geometry
+# stages via RADV_PERFTEST. Used to test Hypothesis H2: unblocking VOPD dual-issue
+# by overriding the driver's default Wave64 policy on GFX11.
+
+[profile]
+name = "stock-wave32"
+driver = "stock"
+radv_debug = []
+radv_perftest = ["cswave32", "pswave32", "gewave32"]
+mangohud = false
+renderdoc = false
+sqtt = false
+shader_cache_dir = "session"
+
+[env]

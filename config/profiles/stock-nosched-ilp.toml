@@ -1,0 +1,19 @@
+# Stock driver with ACO's post-RA ILP/clause scheduler disabled
+# (ACO_DEBUG=nosched-ilp, aco_ir.cpp:36 → gates schedule_ilp at
+# aco_interface.cpp:161). VOPD pairing still runs.
+#
+# Arm 2, experiment E2.2: isolates what the ILP scheduler buys on real shaders,
+# separately from VOPD pairing.
+
+[profile]
+name = "stock-nosched-ilp"
+driver = "stock"
+radv_debug = []
+radv_perftest = []
+mangohud = false
+renderdoc = false
+sqtt = false
+shader_cache_dir = "session"
+
+[env]
+ACO_DEBUG = "nosched-ilp"

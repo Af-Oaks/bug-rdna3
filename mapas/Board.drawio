@@ -1,0 +1,183 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="board" name="Board">
+    <mxGraphModel dx="1422" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="2450" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="titulo" value="&lt;b&gt;BOARD — o que testar, o que se descobriu, por onde não ir&lt;/b&gt;&lt;br&gt;Mapa vivo. Mova os cartões. Um achado só sobe para ONGOING.md depois de reproduzido; só entra no documento depois de virar mecanismo entendido." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;verticalAlign=middle;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1520" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legenda" value="&lt;b&gt;REGRA DE PROMOÇÃO&lt;/b&gt;&amp;nbsp;&amp;nbsp; observação → BOARD → reproduzido com proveniência → ONGOING.md → mecanismo entendido → DOMAIN.md → sustenta afirmação de pesquisa → METHODOLOGY.md / documento.&amp;nbsp;&amp;nbsp;&amp;nbsp; &lt;b&gt;Nada pula etapa.&lt;/b&gt; Achado que se revelou errado é &lt;b&gt;apagado&lt;/b&gt;, não anotado — afirmação retratada que fica na página volta a ser citada." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;align=left;verticalAlign=middle;fontSize=12;spacing=8;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="1520" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="col1h" value="&lt;b&gt;A TESTAR&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=center;verticalAlign=middle;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="40" y="145" width="490" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="col2h" value="&lt;b&gt;EM ANDAMENTO&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=center;verticalAlign=middle;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="555" y="145" width="490" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="col3h" value="&lt;b&gt;DESCOBERTAS&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;verticalAlign=middle;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="145" width="490" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="t1" value="&lt;b&gt;1. Forçar wave32&lt;/b&gt;&lt;br&gt;RADV_PERFTEST=cswave32,pswave32,gewave32. É &lt;b&gt;um arquivo de perfil&lt;/b&gt; e é a primeira variável independente de verdade — diferente de stock-vs-custom, que é nulo por construção. Esperado: VOPD sobe, pressão de VGPR e ocupância mudam. Se ficou mais rápido é a M3 que responde." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="195" width="490" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="&lt;b&gt;2. Correlação de VOPD no corpus inteiro&lt;/b&gt;&lt;br&gt;Agrupada por API (Vulkan nativo vs DX12 traduzido) e por coorte. É o que retira a descoberta principal do n = 1. Sem isto, nada sobre wave size generaliza." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="307" width="490" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t3" value="&lt;b&gt;3. Modelo de ocupância gfx1101 (H3)&lt;/b&gt;&lt;br&gt;Calcular waves por VGPR/SGPR/LDS/scratch a partir dos limites do manual; limitador = argmin; folga até o próximo degrau. &lt;b&gt;Autoverificação obrigatória:&lt;/b&gt; o mínimo tem de bater com o max_waves reportado pelo driver em toda linha." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="419" width="490" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t4" value="&lt;b&gt;4. Modificar o ACO de fato&lt;/b&gt;&lt;br&gt;A cópia customizada é hoje byte a byte idêntica à original — o A/B nulo confirma. A bancada inteira está pronta esperando a primeira modificação real." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="531" width="490" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="t5" value="&lt;b&gt;5. Etapa gráfica da M3&lt;/b&gt;&lt;br&gt;Hoje o executor só despacha compute. Só vale a pena se um título gráfico precisar mesmo ser coberto." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="633" width="490" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="t6" value="&lt;b&gt;6. Validar H1: densidade de espera × tempo medido&lt;/b&gt;&lt;br&gt;Regredir a densidade de s_delay_alu contra o tempo de GPU da M3 nos mesmos shaders. &lt;b&gt;Se não correlacionar, isso se reporta&lt;/b&gt; — proxy que falha na validação é achado, não coisa a enterrar." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="725" width="490" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="t7" value="&lt;b&gt;7. Dose-resposta + canário térmico&lt;/b&gt;&lt;br&gt;Medir cada shader com orçamento N e 4N: inclinação = custo por invocação, intercepto = custo fixo de despacho. Mais um shader trivial cronometrado a cada K pipelines, para pegar evento térmico &lt;i&gt;durante&lt;/i&gt; a execução." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="837" width="490" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="t8" value="&lt;b&gt;8. Taxonomia de cargas&lt;/b&gt;&lt;br&gt;Regras sobre razões normalizadas, com limiares calibrados na distribuição do corpus e registrados por execução. Regra em vez de clusterização: um revisor discute um limiar, não uma semente de k-means." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="939" width="490" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="t9" value="&lt;b&gt;9. Camada estatística&lt;/b&gt;&lt;br&gt;Correção para comparações múltiplas; tamanho de efeito com intervalo em vez de estrelinhas de significância; inferência agrupada por jogo. &lt;b&gt;É o passo mais atacável numa defesa&lt;/b&gt; e hoje é só intenção declarada." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1041" width="490" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a1" value="&lt;b&gt;Fundação de pesquisa (fase 1)&lt;/b&gt;&lt;br&gt;docs/PREMISE.md · METHODOLOGY.md · GLOSSARY.md · BIBLIOGRAPHY.md · RESEARCH_GUIDELINES.md — as pré-respostas do pré-projeto e o guia permanente dos agentes. Estes três mapas fazem parte da mesma entrega." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="195" width="490" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="&lt;b&gt;Pré-projeto de TCC (fase 2)&lt;/b&gt;&lt;br&gt;Documento .docx para entregar: capa com ciente, sumário, introdução, objetivos, relevância, escopo, metodologia, infraestrutura, resultados esperados, cronograma Ago/2026–Jul/2027, bibliografia ABNT." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="327" width="490" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="&lt;b&gt;🟥 URGENTE E IRREVERSÍVEL — salvar os shaders&lt;/b&gt;&lt;br&gt;&lt;b&gt;10 dos 18 jogos ainda guardam dados que nunca foram copiados&lt;/b&gt; (re6 está sem 256 de 259 arquivos). A Steam apaga esses caches ao desinstalar. &lt;code&gt;tcc collect --check&lt;/code&gt; lista quais.&lt;br&gt;&lt;br&gt;Todo o método depende de um corpus que ainda não está seguro. É o único item da lista que não dá para desfazer." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="429" width="490" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" value="&lt;b&gt;Verificar os números da premissa&lt;/b&gt;&lt;br&gt;Os percentuais de ganho anunciado e medido vêm da apresentação, não de fonte consultada. Cada um precisa de resolução, preset, versão de driver e data. &lt;b&gt;A premissa é a base de toda a justificativa e é hoje o item menos documentado do projeto.&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="571" width="490" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d1" value="&lt;b&gt;VOPD exige wave32&lt;/b&gt;&amp;nbsp;&amp;nbsp;&lt;i&gt;Remnant II, 17.730 shaders&lt;/i&gt;&lt;br&gt;wave64: 17.482 (98,6%) → VOPD em &lt;b&gt;0&lt;/b&gt; (0,0%)&lt;br&gt;wave32: 248 (1,4%) → VOPD em &lt;b&gt;244&lt;/b&gt; (98,4%)&lt;br&gt;&lt;br&gt;Ou seja: &quot;subuso de VOPD&quot; não é falha em achar pares. É consequência da escolha de tamanho de wave.&lt;br&gt;🟥 &lt;b&gt;n = 1 jogo.&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="195" width="490" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="d2" value="&lt;b&gt;…e a razão está no driver, não no ACO&lt;/b&gt;&lt;br&gt;&lt;code&gt;radv_physical_device.c:2505-2529&lt;/code&gt;: cs/ps/ge_wave_size = &lt;b&gt;64&lt;/b&gt; por padrão em GFX10+. wave32 só por RADV_PERFTEST. RT é exceção e usa 32.&lt;br&gt;&lt;br&gt;Reformula a H2: não é heurística chegando a uma conclusão — é &lt;b&gt;política padrão&lt;/b&gt;, e VOPD é inalcançável por construção.&lt;br&gt;⚠️ fixar o commit antes de citar." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="327" width="490" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="d3" value="&lt;b&gt;Teste nulo M1 passou&lt;/b&gt;&lt;br&gt;17.725 linhas unidas, 19 métricas, &lt;b&gt;delta ZERO&lt;/b&gt;. strace confirmou que os dois drivers carregam binários diferentes — é A/B de verdade, não fallback silencioso para o mesmo compilador.&lt;br&gt;&lt;b&gt;Esse zero é o que autoriza confiar em qualquer número diferente de zero depois.&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="459" width="490" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="d4" value="&lt;b&gt;Teste nulo M3 passou&lt;/b&gt;&lt;br&gt;mechabellum, 6 shaders estáveis, média −0,186%, mediana &lt;b&gt;−0,008%&lt;/b&gt; — zero dentro do ruído, como tem de ser enquanto o compilador custom é idêntico." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="561" width="490" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="d5" value="&lt;b&gt;Fundir os .foz é união, não concatenação&lt;/b&gt;&lt;br&gt;Analisar um arquivo escolhido arbitrariamente descartava: re6 &lt;b&gt;52%&lt;/b&gt;, remnant2 &lt;b&gt;50%&lt;/b&gt;, helldivers2 &lt;b&gt;42%&lt;/b&gt;.&lt;br&gt;Endereçamento por conteúdo ⇒ sem risco de contar duas vezes (verificado: 5.035 + 5.038 → 5.038).&lt;br&gt;Ganho ao fundir: cyberpunk &lt;b&gt;+21,0%&lt;/b&gt;, kh3 &lt;b&gt;+19,5%&lt;/b&gt;." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="653" width="490" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="d6" value="&lt;b&gt;Limite de escopo da M3 (resultado, não falha)&lt;/b&gt;&lt;br&gt;Remnant II (vkd3d/DX12): &lt;b&gt;0 de 8&lt;/b&gt;, falha de página em 0x800044800000. mechabellum (Vulkan nativo): 4 de 6, variação 0,098–0,263%.&lt;br&gt;Motivo estrutural: shaders DX12 traduzidos leem ponteiros crus &lt;b&gt;e&lt;/b&gt; os deslocamentos dos mesmos buffers — nenhum padrão de preenchimento deixa os dois válidos.&lt;br&gt;→ M3 vale para Vulkan nativo; DX12 fica com M1 + M2." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="785" width="490" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="d7" value="&lt;b&gt;s_delay_alu medido num shader real&lt;/b&gt;&lt;br&gt;142 s_delay_alu em 3.314 instruções = &lt;b&gt;12,85%&lt;/b&gt; do fluxo em espera pura (com s_waitcnt e s_nop). Distância decodificada: VALU_DEP_1 ×86, DEP_2 ×63, DEP_3 ×20, DEP_4 ×36, SALU_CYCLE_1 ×28. Conferido contra grep independente.&lt;br&gt;🟥 &lt;b&gt;Contagem não é custo&lt;/b&gt; — e é n = 1 shader." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="917" width="490" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="d8" value="&lt;b&gt;🟨 Correção lida nos manuais da AMD&lt;/b&gt;&lt;br&gt;RDNA 2 §4.4 e RDNA 3 §5.6 trazem a &lt;b&gt;mesma frase, palavra por palavra&lt;/b&gt;: o hardware resolve a maioria das dependências. A RDNA3 &lt;b&gt;não removeu&lt;/b&gt; a resolução de dependências — ela adicionou S_DELAY_ALU (§5.7, inexistente na RDNA 2) e o VOPD (§7.6). Usar a versão popular é entregar a pergunta pronta para a banca." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1049" width="490" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="d9" value="&lt;b&gt;Remnant II tem um binding com descriptorCount = 1.000.000&lt;/b&gt;&lt;br&gt;É o heap do D3D12 (MUTABLE_EXT). Pools passaram a ser criados por layout, dimensionados pelos bindings daquele layout." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1171" width="490" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="d10" value="&lt;b&gt;Nenhum estudo revisado por pares caracteriza a RDNA3 pelo compilador&lt;/b&gt;&lt;br&gt;Busca em 17/08/2026: arXiv, ACM DL, IEEE, Semantic Scholar. Existe documentação do fabricante, existe medição de indústria (Chips and Cheese) e existe literatura análoga em hardware NVIDIA — não existe o cruzamento RDNA3 + cargas reais + compilador aberto como variável.&lt;br&gt;&lt;i&gt;Isso licencia a novidade; não licencia dizer que ninguém estudou a RDNA3.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1263" width="490" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="col4h" value="&lt;b&gt;NOVAS ROTAS&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=center;verticalAlign=middle;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1390" width="490" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="col5h" value="&lt;b&gt;ERROS E BECOS SEM SAÍDA&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;verticalAlign=middle;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="555" y="1390" width="490" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="col6h" value="&lt;b&gt;DECISÕES&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;verticalAlign=middle;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1390" width="490" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r1" value="&lt;b&gt;Experimento de clock&lt;/b&gt;&lt;br&gt;Varrer o clock de shader e medir o mesmo shader em cada ponto. Se o tempo escala com o clock → limitado por ALU. Se não escala → preso em espera. Com clocks desacoplados, subir só o clock de shader faz o shader esperar relativamente mais pela memória." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1450" width="490" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" value="&lt;b&gt;VK_KHR_performance_query&lt;/b&gt;&lt;br&gt;O RADV expõe contadores: ciclos ativos, waves, instruções, VALU/SALU, VMEM/SMEM, LDS, VALU Busy %, hit ratio de L0/L1/L2.&lt;br&gt;&lt;b&gt;Não existe contador direto de &quot;ciclos parados&quot;.&lt;/b&gt; Deduz-se: IPC = instruções / ciclos; VALU Busy baixo com muitas waves ativas = esperando; cruzar com hit ratio separa dependência de memória." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1562" width="490" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" value="&lt;b&gt;RGA — compilação para dois alvos&lt;/b&gt;&lt;br&gt;Extrair o SPIR-V e compilar o mesmo shader para gfx1030 (RDNA2) e gfx1101 (RDNA3), comparando uso de registradores e ISA emitida.&lt;br&gt;🟥 &lt;b&gt;Isto compara saída de compilador, NUNCA FPS.&lt;/b&gt; Jamais apresentar como aceleração medida entre gerações. Depende de baixar o tarball da AMD." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1694" width="490" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" value="&lt;b&gt;Teto de emissão dupla&lt;/b&gt;&lt;br&gt;Percorrer VALU adjacentes no assembly e testar cada par contra as regras do §7.6 (subconjunto de opcodes, bancos de VGPR, paridade de destino, wave32). Contar pares legais e comparar com os v_dual_ emitidos. Subuso = teto − capturado.&lt;br&gt;&lt;i&gt;Ressalva: par legal não significa que o ACO pudesse escalonar ali sem piorar outra coisa. O teto é limite de oportunidade, não perda comprovada.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1826" width="490" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" value="&lt;b&gt;Tempo de compilação = stutter&lt;/b&gt;&lt;br&gt;As colunas de duração de PSO e de estágio já estão em toda linha coletada, sem uso. Explicam engasgo de compilação de shader, que o FPS em regime permanente esconde. Manter separado da calibração de FPS." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1948" width="490" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="r6" value="&lt;b&gt;SQTT&lt;/b&gt;&lt;br&gt;Rastreamento de thread da própria GPU — o único caminho que dá custo real de parada em vez de dedução. Ainda não investigado." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="2050" width="490" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="x1" value="&lt;b&gt;GFXReconstruct dentro do Proton&lt;/b&gt;&lt;br&gt;Falhou em três paredes empilhadas: pré-carregador 32 bits não carrega layer de 64 bits (pânico de ELF); alocador do VKD3D-Proton colide com rastreamento de memória por falha de página; o contêiner bloqueia caminhos não montados.&lt;br&gt;→ usar ENABLE_VULKAN_RENDERDOC_CAPTURE=1, que a Valve já integra." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="1450" width="490" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="x2" value="&lt;b&gt;gfx1100 ≠ gfx1101&lt;/b&gt;&lt;br&gt;A 7800 XT é Navi 32 = gfx1101. gfx1100 é Navi 31. Número produzido no alvo errado é &lt;b&gt;inválido&lt;/b&gt;, não aproximado." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="1592" width="490" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="x3" value="&lt;b&gt;Parsear dump de RADV_DEBUG=shaders&lt;/b&gt;&lt;br&gt;2 GB de log, OOM, parser em streaming — saga inteira desnecessária: &lt;code&gt;--enable-pipeline-stats&lt;/code&gt; sempre existiu e o driver reporta as estatísticas sozinho, inclusive VOPD por estágio. &lt;b&gt;Não parseie o que o driver te conta.&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="1684" width="490" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="x4" value="&lt;b&gt;fossilize-prune --skip&lt;/b&gt;&lt;br&gt;Silenciosamente errado acima de ~1000 hashes. Não construir base &quot;guardar só N&quot; com ele." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="1786" width="490" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="x5" value="&lt;b&gt;Glob em ~/.local/share/Steam&lt;/b&gt;&lt;br&gt;Os caches ficam na biblioteca do próprio jogo, que pode estar em outro disco. Passar por libraryfolders.vdf e procurar em todas." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="1878" width="490" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="x6" value="&lt;b&gt;Estado de automação em /tmp&lt;/b&gt;&lt;br&gt;O pressure-vessel monta $HOME mas não expõe /tmp de forma confiável. Arquivo de perfil armado tem de viver sob $HOME." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="1970" width="490" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="x7" value="&lt;b&gt;Rodar trabalho de GPU no processo principal&lt;/b&gt;&lt;br&gt;Uma falha de página destrói o dispositivo e leva junto todo pipeline posterior. Processo separado, tempo limite, detecção de reset. Já provou que era necessário: oito falhas seguidas na SB-0 e o desktop nem percebeu." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="2062" width="490" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="x8" value="&lt;b&gt;Supor que arquivo .foz termina em .foz&lt;/b&gt;&lt;br&gt;O layout legado não tem extensão. Nunca globar &lt;code&gt;*.foz&lt;/code&gt;." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="2164" width="490" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="x9" value="&lt;b&gt;Compilar ferramenta da fonte sem checar&lt;/b&gt;&lt;br&gt;1,5 GB de fonte do RGA parados por meses; o &quot;binário&quot; era um wrapper de 1,3 KB e o amdllpc um stub de ponteiro git-lfs. Preferir os tarballs prontos do fabricante — e conferir que a ferramenta existe &lt;b&gt;antes&lt;/b&gt; de planejar em cima dela." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="555" y="2246" width="490" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="c1" value="&lt;b&gt;Enquadramento: caracterizar&lt;/b&gt;&lt;br&gt;Nunca &quot;provar defeito de hardware&quot;. O método produz &quot;sob a condição X medimos Y&quot;, não &quot;a placa tem bug&quot;." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1450" width="490" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" value="&lt;b&gt;Gen-over-gen é premissa citada&lt;/b&gt;&lt;br&gt;Não é variável dependente medida. Não há RDNA2 na bancada. Os rótulos de coorte são evidência externa com fonte, data, resolução, preset e driver registrados — nunca número deste trabalho." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1562" width="490" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" value="&lt;b&gt;Contribuição deliberadamente aberta&lt;/b&gt;&lt;br&gt;É estudo investigativo. Os objetivos são verbos de medição (garantidos), e os resultados esperados enumeram o espaço de desfechos. Nenhum número é prometido." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1674" width="490" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" value="&lt;b&gt;Idiomas&lt;/b&gt;&lt;br&gt;Documentos do repositório em inglês (AGENTS.md §0.6). Pré-projeto e estes mapas em português." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1776" width="490" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" value="&lt;b&gt;Sem nuvem, sem banco externo&lt;/b&gt;&lt;br&gt;Tudo roda e fica na máquina. Artefato rastreável por sessão e sha256." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1868" width="490" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" value="&lt;b&gt;Proveniência obrigatória&lt;/b&gt;&lt;br&gt;Todo subprocesso cuja saída pode chegar à tese passa por execução registrada, que fotografa &lt;b&gt;o ambiente que o filho realmente recebeu&lt;/b&gt; — o único registro verificável por máquina de qual compilador produziu um número. Nunca confiar na configuração para saber qual driver carregou." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="1950" width="490" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" value="&lt;b&gt;Zero é resultado&lt;/b&gt;&lt;br&gt;O teste nulo tem de dar zero, e um experimento real que dá zero é achado. Nenhum dos dois é falha a repetir até mexer." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="2062" width="490" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c8" value="&lt;b&gt;Apresentacao.drawio está congelado&lt;/b&gt;&lt;br&gt;Era a apresentação para o orientador entender o projeto. Mapas novos vivem em &lt;code&gt;mapas/&lt;/code&gt; e são editáveis à vontade — nenhum script os regenera." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="2134" width="490" height="80" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

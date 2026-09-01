@@ -44,6 +44,25 @@ and ACO extras: `Instructions, Copies, Branches, Latency, Inverse Throughput, VM
 → **VOPD counts and instruction mix come straight from the driver** — much of the thesis analysis
 does not even need ISA parsing. The tidy parser keeps unknown stats in the `extra` JSON column.
 
+## Do these first (added 2026-08-21, Arm 2)
+
+The ablation path is open and needs no new code. See
+[docs/ARM2_COMPILER.md](docs/ARM2_COMPILER.md).
+
+1. **E2.2 — corpus-wide pass ablation.** Replay all 18 titles under `stock` /
+   `stock-wave32` / `stock-novopd` / `stock-nosched-ilp` / `stock-nosched`, join
+   on `(Pipeline hash, Executable name)`. Proven on solcesto in ten minutes:
+   300 stages, VOPD 0 → 2990 under forced wave32, back to 0 with
+   `ACO_DEBUG=nosched-vopd`. **The cheapest defensible result in the project.**
+2. **Resolve the waves/SIMD discrepancy** — the driver reports
+   `Subgroups per SIMD` = 32 for wave64 stages; STATE_OF_THE_ART §4 item 5 says
+   the max is 16 on GFX10_3+. One of the two is wrong and H3 sits on top of it.
+3. **Run M3** under `stock` vs `stock-wave32` on the native-Vulkan subset: turn
+   ACO's *modeled* −14.08% inverse throughput into measured GPU time, or refute it.
+4. **Audit the remaining profiles** (`custom`, `capture-rdc`, `bench-mangohud`)
+   against the driver's option tables. Two of six were silently inert.
+5. **E2.1 — VOPD pairing horizon.** Needs `shaderlab/harness/` (Phase 5).
+
 ## To resume (next session)
 
 1. `git checkout rework` — inspect the WIP commit for Phase 2 state.
@@ -157,6 +176,12 @@ The rework is not just a cleanup — it changes the method:
   the only sane automation path. The armed file must live under `$HOME` — Pressure Vessel does not
   reliably share `/tmp`. The wrapper must NEVER break a launch (every failure → `exec "$@"`).
 - **Verify appids, don't trust memory**: the Wukong *Benchmark Tool* is 3132990; 2358720 is the base game.
+- **A driver flag that does not exist fails silently.** `parse_debug_string`
+  (`src/util/u_debug.c:420-443`) ignores unknown tokens with no warning, so
+  `RADV_DEBUG=novopd` — which was in `config/profiles/stock-novopd.toml` for
+  months — set nothing and would have produced a null result readable as "VOPD
+  does not matter". Same for `RADV_THREAD_TRACE_TRIGGER` in `config.py`. Grep the
+  Mesa tree for a flag before shipping a profile that depends on it.
 - **The custom ACO is still stock.** `custom_mesa_layer/` has zero modifications, so
   stock-vs-custom must diff to zero — that's the Phase 4 sanity check, not a disappointment.
 - **The git repo was never the bloat problem** — 20MB of history vs ~7GB of untracked working-tree

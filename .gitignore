@@ -1,6 +1,15 @@
 #AI
 .claude/
 .claude/*
+.agents
+.ruff_cache/
+.venv
+.vscode
+.github/
+docs/preprojeto/
+Apresentacao*
+Apresentacao.drawio.backup2-1105
+Apresentacao.drawio
 _attic/
 # Big local data: sessions, foz caches, archives, shaderlab outputs
 data/

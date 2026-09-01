@@ -1,13 +1,21 @@
 # Thesis Notes
 
 Consolidated working notes for the TCC. Historical procedures are kept here for provenance;
-the current automated workflow lives in `docs/WORKFLOWS.md` and the `tcc` CLI.
+the current automated workflow lives in [../DOMAIN.md](../DOMAIN.md) and the `tcc` CLI.
+(`docs/WORKFLOWS.md` was referenced here but never existed; corrected 2026-08-20.)
 
 ## Investigation focus
 
 - Why RDNA3 (RX 7800 XT, Navi 32, gfx1101) shows uneven gen-over-gen gains vs RDNA2.
-- Hypotheses: compiler-managed hazards via `s_delay_alu` (no hardware interlocks),
+- Hypotheses: compiler-managed ALU **issue distance** via `s_delay_alu`,
   VOPD dual-issue underutilization, VGPR pressure / occupancy limits.
+  ⚠️ **Corrected 2026-08-20.** This line used to read "*via `s_delay_alu` (no
+  hardware interlocks)*". That framing is refuted: both RDNA2 §4.4 and RDNA3
+  §5.6 carry the identical sentence that shader hardware resolves most data
+  dependencies. Interlocks were **not** removed. What GFX11 changed is that the
+  SIMD frontend no longer switches waves on an ALU stall, so the cost is paid in
+  occupancy rather than correctness — see [PREMISE.md](PREMISE.md) §2 and
+  [STATE_OF_THE_ART.md](STATE_OF_THE_ART.md) §2.
 - Method: correlate high-gain vs low-gain workloads; compare stock ACO vs custom-modified
   ACO builds; not to "prove a flaw" but to measure which characteristics correlate with gains.
 

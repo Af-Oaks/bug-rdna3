@@ -1,0 +1,98 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="premissa" name="Premissa">
+    <mxGraphModel dx="1422" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="titulo" value="&lt;b&gt;PREMISSA — por que este estudo existe&lt;/b&gt;&lt;br&gt;Caracterização de desempenho da arquitetura AMD RDNA3. Este mapa NÃO contém resultados: só a justificativa." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=center;verticalAlign=middle;fontSize=15;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1520" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legenda" value="&lt;b&gt;LEGENDA&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp; 🟩 verificado na fonte primária (manual da AMD ou código do driver)&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp; 🟦 mecanismo / ferramenta&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp; 🟨 correção de entendimento&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp; 🟥 limite de honestidade&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp; 🟪 citação externa (a verificar)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;align=left;verticalAlign=middle;fontSize=12;spacing=8;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="1520" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h1" value="&lt;b&gt;1. O ANÚNCIO vs A MEDIÇÃO&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="145" width="600" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="anunciado" value="&lt;b&gt;O QUE FOI ANUNCIADO&lt;/b&gt;&lt;br&gt;&lt;br&gt;Dois meses antes do lançamento, a AMD publicou uma prévia de desempenho da RX 7900 XTX contra a RX 6950 XT.&lt;br&gt;&lt;br&gt;Expectativa comunicada: ganho da ordem de &lt;b&gt;50% ou mais&lt;/b&gt; por título.&lt;br&gt;&lt;br&gt;⚠️ &lt;i&gt;Falta localizar o material original (slides / press kit). Hoje este número é o item MENOS documentado do projeto — e ele é a base de toda a justificativa.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="180" width="470" height="230" as="geometry" />
+        </mxCell>
+
+        <mxCell id="medido" value="&lt;b&gt;O QUE FOI MEDIDO POR TERCEIROS&lt;/b&gt;&lt;br&gt;&lt;br&gt;Watch Dogs — 36% medido / 50% anunciado&lt;br&gt;Call of Duty — 42% medido / 50% anunciado&lt;br&gt;Cyberpunk 2077 — 42% medido / 70% anunciado&lt;br&gt;&lt;br&gt;Média de 16 jogos (Hardware Unboxed): &lt;b&gt;~34%&lt;/b&gt;&lt;br&gt;Média de análise (TechSpot): &lt;b&gt;~28%&lt;/b&gt;&lt;br&gt;&lt;br&gt;⚠️ &lt;i&gt;Nenhum destes números foi conferido na fonte. Cada um precisa de: resolução, preset, versão de driver e data. Sem os quatro campos, não é evidência.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="565" y="180" width="470" height="230" as="geometry" />
+        </mxCell>
+
+        <mxCell id="diferenca" value="&lt;b&gt;A DIFERENÇA É A PREMISSA&lt;/b&gt;&lt;br&gt;&lt;br&gt;Entre o esperado pela especificação e o entregue nos jogos existe uma lacuna consistente.&lt;br&gt;&lt;br&gt;🟥 &lt;b&gt;Esta lacuna é PREMISSA, não resultado.&lt;/b&gt; O trabalho NÃO mede ganho entre gerações e NÃO possui esse número — ele o cita e investiga a arquitetura por baixo dele.&lt;br&gt;&lt;br&gt;Não há hardware RDNA2 na bancada. Qualquer comparação entre gerações seria inventada." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="180" width="470" height="230" as="geometry" />
+        </mxCell>
+
+        <mxCell id="seta1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="anunciado" target="medido">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="seta2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;strokeWidth=2;" edge="1" parent="1" source="medido" target="diferenca">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h2" value="&lt;b&gt;2. A ARITMÉTICA QUE PREVIA O NÚMERO MAIOR&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="425" width="600" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="aritmetica" value="&lt;b&gt;O QUE A FICHA TÉCNICA IMPLICA&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;1,17 (IPC) × 1,20 (unidades de computação) × 1,081 (clock) ≈ 1,51&lt;/b&gt;&lt;br&gt;&lt;br&gt;Ou seja: ~51% — praticamente o que os slides prometiam. O número anunciado NÃO era implausível; ele é aproximadamente o que a especificação implica.&lt;br&gt;&lt;br&gt;⚠️ &lt;i&gt;Esta conta é derivação do autor. Ou se cita a tabela de especificação de cada fator, ou se apresenta explicitamente como cálculo próprio. Apresentar derivação como afirmação do fabricante é erro fatal justamente por parecer inofensivo.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="460" width="740" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dualissue-prom" value="&lt;b&gt;E ISSO IGNORA A EMISSÃO DUPLA&lt;/b&gt;&lt;br&gt;&lt;br&gt;A conta acima nem inclui o VOPD (dual-issue), que em princípio &lt;b&gt;dobra o pico de FP32 por SIMD&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Somando o dual-issue, o teto teórico é ainda mais alto — o que torna a distância entre teórico e entregue ainda maior, e a pergunta ainda mais interessante.&lt;br&gt;&lt;br&gt;É exatamente esse recurso que depende &lt;b&gt;inteiramente do compilador&lt;/b&gt; (ver banda 3)." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="820" y="460" width="740" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h3" value="&lt;b&gt;3. O QUE MUDOU NA RDNA3 — segundo os manuais da própria AMD (em pdf_context/)&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="655" width="900" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="correcao" value="&lt;b&gt;⚠️ CORREÇÃO IMPORTANTE&lt;/b&gt;&lt;br&gt;&lt;br&gt;A versão popular — &lt;i&gt;&quot;a RDNA3 removeu o hardware de detecção de hazards e jogou o trabalho no compilador&quot;&lt;/i&gt; — &lt;b&gt;não é o que a AMD documenta&lt;/b&gt;.&lt;br&gt;&lt;br&gt;Os dois manuais dizem a MESMA frase, palavra por palavra:&lt;br&gt;&lt;br&gt;&lt;i&gt;&quot;Shader hardware can resolve most data dependencies, but a few cases must be explicitly handled by the shader program.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;RDNA 2 §4.4&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;RDNA 3 §5.6&lt;br&gt;&lt;br&gt;🟥 Usar a versão popular no TCC é entregar a pergunta pronta para a banca." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="690" width="740" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tabela" value="&lt;b&gt;O QUE DE FATO MUDOU&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Resolução de dependências (correção):&lt;/b&gt;&lt;br&gt;RDNA 2 §4.4 = RDNA 3 §5.6 → &lt;b&gt;inalterado&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;S_DELAY_ALU:&lt;/b&gt;&lt;br&gt;RDNA 2 → &lt;b&gt;não existe&lt;/b&gt; (zero ocorrências no manual)&lt;br&gt;RDNA 3 → §5.7, seção intitulada pela AMD de &lt;b&gt;&quot;ALU Instruction Software Scheduling&quot;&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Emissão dupla (VOPD):&lt;/b&gt;&lt;br&gt;RDNA 2 → não existe&lt;br&gt;RDNA 3 → §7.6, §15.3.7, §16.11&lt;br&gt;&lt;br&gt;&lt;b&gt;A frase honesta:&lt;/b&gt; a RDNA3 não apagou a resolução de dependências do hardware — ela moveu a &lt;b&gt;otimização da distância de emissão&lt;/b&gt; para o fluxo de instruções e tornou a &lt;b&gt;legalidade da emissão dupla&lt;/b&gt; responsabilidade exclusiva do compilador." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="820" y="690" width="740" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sdelay" value="&lt;b&gt;S_DELAY_ALU — §5.7 e §16.5&lt;/b&gt;&lt;br&gt;&lt;br&gt;Citação literal do manual:&lt;br&gt;&lt;i&gt;&quot;These instructions are optional: without them the program still functions correctly but performance may suffer when multiple waves are in flight; IB may issue dependent instructions that stall in the ALU, preventing those cycles from being utilized by other wavefronts.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Três consequências:&lt;/b&gt;&lt;br&gt;1. Cortar espera não corrompe resultado — o custo é vazão, não estabilidade. Por isso é superfície segura de experimento.&lt;br&gt;2. O custo é pago em &lt;b&gt;ocupância&lt;/b&gt;: os ciclos perdidos não podem ir para outra wave.&lt;br&gt;3. 🟥 &lt;b&gt;Contagem não é custo.&lt;/b&gt; Espera inserida onde a wave já estava parada por memória custa zero." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="970" width="490" height="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vopd" value="&lt;b&gt;VOPD — §7.6&lt;/b&gt;&lt;br&gt;&lt;br&gt;Citação literal:&lt;br&gt;&lt;i&gt;&quot;This instruction has certain restrictions that must be met - hardware does not function correctly if they are not. This instruction format is legal only for wave32.&quot;&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Regras que o compilador tem de satisfazer:&lt;/b&gt;&lt;br&gt;• só wave32 — em wave64 a codificação é ignorada&lt;br&gt;• SRCX0 e SRCY0 em &lt;b&gt;bancos de VGPR diferentes&lt;/b&gt;; idem VSRCX1 e VSRCY1&lt;br&gt;• se ambos usam SRC2, um índice par e outro ímpar&lt;br&gt;• VGPRs de destino: um par, outro ímpar&lt;br&gt;• no máximo 2 SGPRs, ou 1 SGPR + 1 literal&lt;br&gt;• operações independentes; sem DPP&lt;br&gt;&lt;br&gt;O manual chama de &lt;i&gt;&quot;hard rules&quot;&lt;/i&gt;. Não há plano B em hardware: par não satisfeito = vazão perdida em silêncio." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="555" y="970" width="490" height="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="wave64" value="&lt;b&gt;🟩 O QUE O DRIVER FAZ HOJE&lt;/b&gt;&lt;br&gt;&lt;i&gt;lido no código, em lib/mesa&lt;/i&gt;&lt;br&gt;&lt;br&gt;&lt;code&gt;radv_physical_device.c:2505-2529&lt;/code&gt;&lt;br&gt;&lt;br&gt;cs_wave_size = &lt;b&gt;64&lt;/b&gt;&lt;br&gt;ps_wave_size = &lt;b&gt;64&lt;/b&gt;&lt;br&gt;ge_wave_size = &lt;b&gt;64&lt;/b&gt;&lt;br&gt;rt_wave_size = 32 (exceção)&lt;br&gt;&lt;br&gt;wave32 para compute/pixel/geometria só é alcançável por &lt;b&gt;RADV_PERFTEST=cswave32,pswave32,gewave32&lt;/b&gt;.&lt;br&gt;&lt;br&gt;&lt;b&gt;Isto reformula a hipótese 2:&lt;/b&gt; &quot;o ACO escolhe wave64&quot; não é heurística — é a &lt;b&gt;política padrão do driver&lt;/b&gt;. E como VOPD é wave32-only por regra de hardware, o dual-issue é inalcançável por construção na quase totalidade dos shaders.&lt;br&gt;&lt;br&gt;⚠️ fixar o hash do commit antes de citar." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="970" width="490" height="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h4" value="&lt;b&gt;4. POR QUE O COMPILADOR VIROU PEÇA CENTRAL — e o que a literatura já diz sobre essa troca&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="1320" width="1000" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tradeoff" value="&lt;b&gt;A TROCA, DOS DOIS LADOS&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Resolvido em hardware:&lt;/b&gt; custa lógica, portas e fios — mas conhece a latência real, o resultado real do cache e a máscara EXEC real. Janela de análise: dezenas de instruções.&lt;br&gt;&lt;br&gt;&lt;b&gt;Resolvido em compilador:&lt;/b&gt; libera essa área para unidades de execução — mas decide sem saber o que só existe em tempo de execução. Janela de análise: praticamente ilimitada.&lt;br&gt;&lt;br&gt;&lt;b&gt;Modo de falha de cada um:&lt;/b&gt; hardware = paradas conservadoras absorvidas em silêncio. Compilador = esperas conservadoras, ou pares não emitidos — vazão perdida em silêncio.&lt;br&gt;&lt;br&gt;&lt;b&gt;E a linha que justifica o trabalho:&lt;/b&gt; decisão em silício ninguém conserta. Decisão em compilador &lt;b&gt;qualquer um conserta — e a correção alcança toda placa já vendida&lt;/b&gt;." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1355" width="740" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="literatura" value="&lt;b&gt;🟪 A LITERATURA DESSA DECISÃO&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;RAU &amp;amp; FISHER (1993)&lt;/b&gt; — forma canônica do dilema estático vs dinâmico: o compilador enxerga longe, mas decide antes de saber.&lt;br&gt;&lt;br&gt;&lt;b&gt;NVIDIA Kepler (2012)&lt;/b&gt; — &lt;b&gt;o precedente direto&lt;/b&gt;. Substituiu o scoreboard da Fermi por informação de controle vinda do compilador, justificando com latência determinística de ALU, para gastar área e energia em densidade de computação. Mesma decisão, dez anos antes, na concorrente.&lt;br&gt;&lt;br&gt;&lt;b&gt;GEBHART et al. (ISCA 2011)&lt;/b&gt; — quantifica por que escalonador e banco de registradores são a moeda dessa troca.&lt;br&gt;&lt;br&gt;&lt;b&gt;ZHANG et al. (PPoPP 2017)&lt;/b&gt; — &lt;b&gt;o análogo metodológico mais próximo&lt;/b&gt;: mede códigos de controle que governam emissão dupla e bancos de registrador. As mesmas duas alavancas que a RDNA3 expõe.&lt;br&gt;&lt;br&gt;&lt;b&gt;VLIW / Itanium&lt;/b&gt; — a metade cautelar: a premissa não estava errada; ela subestimou quanta informação decisiva só existe em tempo de execução." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;verticalAlign=top;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="820" y="1355" width="740" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pergunta" value="&lt;b&gt;A PERGUNTA QUE SOBRA&lt;/b&gt;&lt;br&gt;&lt;br&gt;Na RDNA3, quais características de uma carga de shaders e da saída do compilador determinam quanto da vazão especificada é de fato alcançada — e quanto da diferença é atribuível a decisões do compilador, e não ao hardware?&lt;br&gt;&lt;br&gt;&lt;i&gt;A pergunta admite &quot;nada disso&quot; como resposta legítima. Essa resposta também seria um resultado: mudaria a explicação de software para arquitetura.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=3;align=left;verticalAlign=middle;fontSize=14;spacing=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1665" width="1520" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="naoafirma" value="&lt;b&gt;🟥 O QUE ESTE MAPA NÃO AFIRMA&lt;/b&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;1. Que a RDNA3 tem defeito de hardware — o trabalho caracteriza comportamento, não diagnostica falha.&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;2. Que a lacuna anunciado/medido é causada pelo compilador — essa é a pergunta em aberto, e &quot;não é&quot; é resposta legítima.&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;3. Que qualquer percentual da banda 1 esteja verificado.&amp;nbsp;&amp;nbsp;·&amp;nbsp;&amp;nbsp;4. Que mexer no compilador seja seguro em geral — só a espera é opcional; modificação agressiva ainda trava a GPU." style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;verticalAlign=middle;fontSize=12;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1835" width="1520" height="100" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

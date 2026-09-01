@@ -1,6 +1,8 @@
 {
   "permissions": {
     "allow": [
+      "Bash(rtk *)",
+      "Bash(rtk)",
       "Read(//home/methos/.local/share/vulkan/explicit_layer.d/**)",
       "Read(//tmp/**)",
       "Read(//home/methos/.local/share/Steam/steamapps/shadercache/1282100/fozpipelinesv6/**)",
@@ -64,7 +66,10 @@
       "Bash(git -C lib/mesa status --short)",
       "Bash(git -C lib/mesa status --porcelain)",
       "Bash(cd /home/methos/Documents/faculdade/TCC_bug_amd *)",
-      "Read(//home/methos/Documents/faculdade/**)"
+      "Read(//home/methos/Documents/faculdade/**)",
+      "Bash(read -r l)",
+      "Bash([ -e \"src/$l\" ])",
+      "Bash(echo \"\\(exit $?\\)\")"
     ]
   }
 }
