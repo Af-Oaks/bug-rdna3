@@ -1,0 +1,20 @@
+# Global tcc configuration. Relative paths are resolved against the repo
+# root (walked up from src/core/paths.py); ~ paths are expanded as-is.
+
+[paths]
+data_dir = "data"
+mesa_stock = "build/install"
+mesa_custom = "build/install_custom"
+tools_dir = "tools"
+steam_root = "~/.local/share/Steam"
+wrapper = "bin/tcc-launch.sh"
+# The armed profile path is NOT configurable: it is hardcoded in
+# paths.armed_profile_path() because it MUST stay under $HOME -- pressure-vessel
+# (Steam's sandbox) mounts $HOME but not /tmp, so an armed profile anywhere else
+# is invisible to the game. It used to be a key here that nothing read.
+
+[defaults]
+replay_threads = 4
+replay_timeout_s = 30
+# consumed by: nothing yet -- rga.py / isa.py (Phase 4) need it as RGA's --asic
+gpu_arch = "gfx1101"

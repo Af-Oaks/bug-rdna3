@@ -1,0 +1,15 @@
+# Real-world control: whatever Vulkan ICD the system loader picks by
+# default, no RADV debug/perftest overrides, default (warm) shader cache.
+# Used as the "how does this actually feel to play" reference point.
+
+[profile]
+name = "baseline"
+driver = "system"
+radv_debug = []
+radv_perftest = []
+mangohud = false
+renderdoc = false
+sqtt = false
+shader_cache_dir = "default"
+
+[env]

@@ -1,0 +1,26 @@
+# Stock driver with ACO's VOPD pairing pass disabled.
+#
+# FIXED 2026-08-21. This profile previously set RADV_DEBUG=novopd. That token
+# does not exist anywhere in the Mesa tree (radv_debug_options[],
+# radv_instance.c:30-90), and parse_debug_string (src/util/u_debug.c:420-443)
+# silently ignores unknown tokens — no warning, no error, zero flags set. The
+# profile was a no-op, and its null result would have read as "VOPD does not
+# matter". The real switch is ACO_DEBUG=nosched-vopd (aco_ir.cpp:37), which
+# gates schedule_vopd at aco_interface.cpp:157.
+#
+# Before trusting any delta from this profile, prove the knob bites: replay one
+# shader under `stock` and under this profile and confirm the driver-reported
+# VOPD statistic drops to 0.
+
+[profile]
+name = "stock-novopd"
+driver = "stock"
+radv_debug = []
+radv_perftest = []
+mangohud = false
+renderdoc = false
+sqtt = false
+shader_cache_dir = "session"
+
+[env]
+ACO_DEBUG = "nosched-vopd"

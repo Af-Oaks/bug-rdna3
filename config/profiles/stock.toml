@@ -1,0 +1,15 @@
+# Stock Mesa RADV/ACO build (build/install), isolated shader cache so
+# stats/foz runs never read stale pipeline-cache entries from a previous
+# driver. profile_env() force-appends RADV_DEBUG=nocache on top of this.
+
+[profile]
+name = "stock"
+driver = "stock"
+radv_debug = []
+radv_perftest = []
+mangohud = false
+renderdoc = false
+sqtt = false
+shader_cache_dir = "session"
+
+[env]

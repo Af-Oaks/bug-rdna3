@@ -1,0 +1,13 @@
+the usage of v_dual_instructions and performance gains. in the .foz extraction
+the quantity of s_delay_alu_instructions
+
+Quebrar faz parte — mas tem que ser medido, não sofrido
+
+Quando a gente cortar wait demais, vai dar resultado errado, hang e device lost. Isso é o ponto de quebra e é justamente um resultado do trabalho: mede quanta margem o compilador estava deixando.
+
+Para isso ser dado e não dor de cabeça:
+• rodar o harness em processo separado, com watchdog — hang na GPU não pode derrubar a sessão
+• capturar VK_ERROR_DEVICE_LOST e registrar como resultado, não como falha do script
+• RADV_DEBUG=hang e syncshaders para localizar em qual shader quebrou
+• conferir reset de GPU no dmesg
+• validar resultado: guardar o buffer de saída de uma versão sabidamente correta e comparar. Resultado errado silencioso é pior que hang.

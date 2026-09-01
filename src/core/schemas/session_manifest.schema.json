@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SessionManifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "game",
+    "scene",
+    "created_at",
+    "status",
+    "profiles_used",
+    "tool_resolution",
+    "steps",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": { "const": 2 },
+    "session_id": { "type": "string" },
+    "game": { "type": "string" },
+    "scene": { "type": "string" },
+    "created_at": { "type": "string" },
+    "status": { "type": "string", "enum": ["open", "closed"] },
+    "profiles_used": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "tool_resolution": { "type": "object" },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "argv", "timestamp", "returncode"],
+        "properties": {
+          "name": { "type": "string" },
+          "argv": { "type": "array", "items": { "type": "string" } },
+          "timestamp": { "type": "string" },
+          "returncode": { "type": ["integer", "null"] }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "text"],
+        "properties": {
+          "timestamp": { "type": "string" },
+          "text": { "type": "string" }
+        }
+      }
+    }
+  }
+}

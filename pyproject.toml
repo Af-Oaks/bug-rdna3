@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tcc"
+version = "0.1.0"
+description = "RDNA3 gain-variability investigation toolkit: shader extraction, compiler stats, runtime and shader benchmarks."
+requires-python = ">=3.12"
+dependencies = [
+    "pandas",
+    "jsonschema",
+    "ruff>=0.16.1",
+]
+
+[project.scripts]
+tcc = "cli:main"
+
+# Contextual top-level packages under src/ (no umbrella `tcc` package).
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = ["core", "core.schemas", "shader_extractor", "analysis", "benchmark", "launcher"]
+py-modules = ["cli"]
+
+[tool.setuptools.package-data]
+"core" = ["schemas/*.schema.json"]

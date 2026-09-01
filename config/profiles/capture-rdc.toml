@@ -1,0 +1,16 @@
+# Real-frame RenderDoc capture (Track A / capture.py, Phase 6). Default
+# (warm) shader cache: we want representative frame times, not a
+# stats-comparison-clean run, so this does NOT force nocache at the profile
+# level -- callers should pass force_nocache=False to config.profile_env().
+
+[profile]
+name = "capture-rdc"
+driver = "stock"
+radv_debug = []
+radv_perftest = []
+mangohud = false
+renderdoc = true
+sqtt = false
+shader_cache_dir = "default"
+
+[env]
